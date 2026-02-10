@@ -36,8 +36,8 @@ export default async function handler(req, res) {
       return res.status(200).json({ data: null });
     }
 
-    // Remove internal fields before sending to frontend
-    const { _id, ...data } = doc;
+    // Remove internal and sensitive fields before sending to public
+    const { _id, adminPassword, ...data } = doc;
     return res.status(200).json({ data });
   } catch (error) {
     console.error('GET /api/data error:', error);

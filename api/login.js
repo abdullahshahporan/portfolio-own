@@ -1,4 +1,5 @@
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
+import crypto from 'crypto';
 
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB || 'portfolio';
@@ -12,6 +13,12 @@ async function connectToDatabase() {
   await client.connect();
   cachedClient = client;
   return client;
+}
+
+// Generate a simple HMAC token from the password so the raw password is never sent to the client
+function generateToken(password) {
+  const secret = process.env.TOKEN_SECRET || process.env.MONGODB_URI || 'portfolio-secret';
+  return crypto.createHmac('sha256', secret).update(password).digest('hex');
 }
 
 export default async function handler(req, res) {
@@ -46,11 +53,10 @@ export default async function handler(req, res) {
       }
     } catch (dbError) {
       console.error('MongoDB connection failed, using env password:', dbError.message);
-      // Fall back to env variable password — don't block login
     }
 
     if (password === storedPassword) {
-      return res.status(200).json({ success: true, token: storedPassword });
+      return res.status(200).json({ success: true, token: generateToken(storedPassword) });
     }
 
     return res.status(403).json({ error: 'Invalid password' });

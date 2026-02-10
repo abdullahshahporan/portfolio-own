@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiLockClosed, HiUser, HiCode, HiCollection, HiAcademicCap, HiCog, HiLogout, HiPlus, HiTrash, HiSave, HiRefresh } from 'react-icons/hi';
 import { usePortfolioData } from '../context/DataContext';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 
 const tabs = [
   { id: 'personal', label: 'Personal Info', icon: HiUser },
@@ -39,7 +39,6 @@ export default function Admin() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 pt-20">
-        <Toaster position="top-right" toastOptions={{ style: { background: '#1e293b', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' } }} />
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -72,7 +71,6 @@ export default function Admin() {
             >
               {loggingIn ? 'Signing In...' : 'Sign In'}
             </button>
-            <p className="text-center text-xs text-gray-500">Default password: admin123</p>
           </form>
         </motion.div>
       </div>
@@ -81,7 +79,6 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen pt-20 pb-10 px-4">
-      <Toaster position="top-right" toastOptions={{ style: { background: '#1e293b', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' } }} />
 
       <div className="max-w-7xl mx-auto">
         {/* Admin Header */}

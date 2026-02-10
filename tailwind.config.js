@@ -4,7 +4,6 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -50,10 +49,6 @@ export default {
       },
       animation: {
         'float': 'float 6s ease-in-out infinite',
-        'glow': 'glow 2s ease-in-out infinite alternate',
-        'slide-up': 'slideUp 0.5s ease-out',
-        'fade-in': 'fadeIn 0.5s ease-out',
-        'typing': 'typing 3.5s steps(40) infinite',
         'blink': 'blink 0.75s step-end infinite',
       },
       keyframes: {
@@ -61,25 +56,9 @@ export default {
           '0%, 100%': { transform: 'translateY(0px)' },
           '50%': { transform: 'translateY(-20px)' },
         },
-        glow: {
-          '0%': { boxShadow: '0 0 20px rgba(42, 157, 143, 0.3)' },
-          '100%': { boxShadow: '0 0 40px rgba(42, 157, 143, 0.6)' },
-        },
-        typing: {
-          '0%, 100%': { width: '0%' },
-          '50%': { width: '100%' },
-        },
         blink: {
           '0%, 100%': { borderColor: 'transparent' },
           '50%': { borderColor: '#2A9D8F' },
-        },
-        slideUp: {
-          '0%': { transform: 'translateY(20px)', opacity: '0' },
-          '100%': { transform: 'translateY(0)', opacity: '1' },
-        },
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
         },
       },
       backgroundImage: {

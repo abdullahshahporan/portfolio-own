@@ -233,16 +233,6 @@ const defaultData = {
       icon: "design"
     }
   ],
-  testimonials: [
-    {
-      id: 1,
-      name: "Open for Testimonials",
-      role: "Add your testimonials from the admin panel",
-      text: "Use the admin panel to add testimonials from your clients, colleagues, or professors.",
-      avatar: ""
-    }
-  ],
-  adminPassword: "admin123",
   web3formsKey: ""
 };
 

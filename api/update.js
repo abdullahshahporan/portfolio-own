@@ -1,4 +1,5 @@
 import { MongoClient } from 'mongodb';
+import crypto from 'crypto';
 
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB || 'portfolio';
@@ -12,6 +13,11 @@ async function connectToDatabase() {
   await client.connect();
   cachedClient = client;
   return client;
+}
+
+function generateToken(password) {
+  const secret = process.env.TOKEN_SECRET || process.env.MONGODB_URI || 'portfolio-secret';
+  return crypto.createHmac('sha256', secret).update(password).digest('hex');
 }
 
 export default async function handler(req, res) {
@@ -39,10 +45,11 @@ export default async function handler(req, res) {
     const existing = await collection.findOne({ _id: 'portfolio' });
     const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
 
-    // Check password: use DB value if exists, otherwise env variable
+    // Check token: verify HMAC token against stored password
     const storedPassword = existing?.adminPassword || adminPassword;
-    if (token !== storedPassword) {
-      return res.status(403).json({ error: 'Invalid password' });
+    const expectedToken = generateToken(storedPassword);
+    if (token !== expectedToken) {
+      return res.status(403).json({ error: 'Invalid token' });
     }
 
     // Update the data
