@@ -6,8 +6,9 @@ const dbName = process.env.MONGODB_DB || 'portfolio';
 let cachedClient = null;
 
 async function connectToDatabase() {
+  if (!uri) return null;
   if (cachedClient) return cachedClient;
-  const client = new MongoClient(uri);
+  const client = new MongoClient(uri, { serverSelectionTimeoutMS: 5000 });
   await client.connect();
   cachedClient = client;
   return client;
@@ -29,13 +30,24 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Password required' });
     }
 
-    const client = await connectToDatabase();
-    const db = client.db(dbName);
-    const collection = db.collection('sitedata');
-
-    const existing = await collection.findOne({ _id: 'portfolio' });
     const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
-    const storedPassword = existing?.adminPassword || adminPassword;
+
+    // Try MongoDB first for stored password
+    let storedPassword = adminPassword;
+    try {
+      const client = await connectToDatabase();
+      if (client) {
+        const db = client.db(dbName);
+        const collection = db.collection('sitedata');
+        const existing = await collection.findOne({ _id: 'portfolio' });
+        if (existing?.adminPassword) {
+          storedPassword = existing.adminPassword;
+        }
+      }
+    } catch (dbError) {
+      console.error('MongoDB connection failed, using env password:', dbError.message);
+      // Fall back to env variable password — don't block login
+    }
 
     if (password === storedPassword) {
       return res.status(200).json({ success: true, token: storedPassword });
@@ -44,6 +56,6 @@ export default async function handler(req, res) {
     return res.status(403).json({ error: 'Invalid password' });
   } catch (error) {
     console.error('POST /api/login error:', error);
-    return res.status(500).json({ error: 'Server error' });
+    return res.status(500).json({ error: 'Server error: ' + error.message });
   }
 }

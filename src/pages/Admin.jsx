@@ -22,11 +22,15 @@ export default function Admin() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoggingIn(true);
-    const success = await login(password);
-    if (success) {
-      toast.success('Welcome to Admin Panel!');
-    } else {
-      toast.error('Invalid password!');
+    try {
+      const success = await login(password);
+      if (success) {
+        toast.success('Welcome to Admin Panel!');
+      } else {
+        toast.error('Invalid password!');
+      }
+    } catch (err) {
+      toast.error('Server error — check Vercel env variables');
     }
     setPassword('');
     setLoggingIn(false);

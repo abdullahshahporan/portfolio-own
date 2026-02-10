@@ -6,8 +6,9 @@ const dbName = process.env.MONGODB_DB || 'portfolio';
 let cachedClient = null;
 
 async function connectToDatabase() {
+  if (!uri) throw new Error('MONGODB_URI environment variable is not set');
   if (cachedClient) return cachedClient;
-  const client = new MongoClient(uri);
+  const client = new MongoClient(uri, { serverSelectionTimeoutMS: 5000 });
   await client.connect();
   cachedClient = client;
   return client;
@@ -40,6 +41,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ data });
   } catch (error) {
     console.error('GET /api/data error:', error);
-    return res.status(500).json({ error: 'Failed to fetch data' });
+    return res.status(500).json({ error: 'Failed to fetch data: ' + error.message });
   }
 }
