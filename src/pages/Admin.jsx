@@ -186,15 +186,15 @@ function PersonalTab({ data, updateAndSave }) {
 
   const savePersonal = async () => {
     setSaving(true);
-    const ok = await updateAndSave({ personal: { ...data.personal, ...form } });
-    ok ? toast.success('Personal info saved!') : toast.error('Failed to save — check connection');
+    const res = await updateAndSave({ personal: { ...data.personal, ...form } });
+    res?.ok ? toast.success('Personal info saved!') : toast.error(res?.error || 'Save failed');
     setSaving(false);
   };
 
   const saveSocial = async () => {
     setSaving(true);
-    const ok = await updateAndSave({ social: { ...data.social, ...socialForm } });
-    ok ? toast.success('Social links saved!') : toast.error('Failed to save — check connection');
+    const res = await updateAndSave({ social: { ...data.social, ...socialForm } });
+    res?.ok ? toast.success('Social links saved!') : toast.error(res?.error || 'Save failed');
     setSaving(false);
   };
 
@@ -245,15 +245,15 @@ function AboutTab({ data, updateAndSave }) {
 
   const saveAbout = async () => {
     setSaving(true);
-    const ok = await updateAndSave({ about: { ...data.about, description: desc, highlights, stats } });
-    ok ? toast.success('About section saved!') : toast.error('Failed to save — check connection');
+    const res = await updateAndSave({ about: { ...data.about, description: desc, highlights, stats } });
+    res?.ok ? toast.success('About section saved!') : toast.error(res?.error || 'Save failed');
     setSaving(false);
   };
 
   const saveServices = async () => {
     setSaving(true);
-    const ok = await updateAndSave({ services });
-    ok ? toast.success('Services saved!') : toast.error('Failed to save — check connection');
+    const res = await updateAndSave({ services });
+    res?.ok ? toast.success('Services saved!') : toast.error(res?.error || 'Save failed');
     setSaving(false);
   };
 
@@ -346,8 +346,8 @@ function SkillsTab({ data, updateAndSave }) {
 
   const save = async () => {
     setSaving(true);
-    const ok = await updateAndSave({ skills });
-    ok ? toast.success('Skills saved!') : toast.error('Failed to save — check connection');
+    const res = await updateAndSave({ skills });
+    res?.ok ? toast.success('Skills saved!') : toast.error(res?.error || 'Save failed');
     setSaving(false);
   };
 
@@ -433,8 +433,8 @@ function ProjectsTab({ data, updateAndSave }) {
 
   const save = async () => {
     setSaving(true);
-    const ok = await updateAndSave({ projects });
-    ok ? toast.success('Projects saved!') : toast.error('Failed to save — check connection');
+    const res = await updateAndSave({ projects });
+    res?.ok ? toast.success('Projects saved!') : toast.error(res?.error || 'Save failed');
     setSaving(false);
   };
 
@@ -518,15 +518,15 @@ function EducationTab({ data, updateAndSave }) {
 
   const saveEducation = async () => {
     setSaving(true);
-    const ok = await updateAndSave({ education });
-    ok ? toast.success('Education saved!') : toast.error('Failed to save — check connection');
+    const res = await updateAndSave({ education });
+    res?.ok ? toast.success('Education saved!') : toast.error(res?.error || 'Save failed');
     setSaving(false);
   };
 
   const saveExperience = async () => {
     setSaving(true);
-    const ok = await updateAndSave({ experience });
-    ok ? toast.success('Experience saved!') : toast.error('Failed to save — check connection');
+    const res = await updateAndSave({ experience });
+    res?.ok ? toast.success('Experience saved!') : toast.error(res?.error || 'Save failed');
     setSaving(false);
   };
 
@@ -622,8 +622,8 @@ function SettingsTab({ data, updateAndSave, resetData }) {
     if (newPassword !== confirmPassword) { toast.error('Passwords do not match'); return; }
     if (newPassword.length < 4) { toast.error('Password too short (min 4 chars)'); return; }
     setSaving(true);
-    const ok = await updateAndSave({ adminPassword: newPassword });
-    ok ? toast.success('Password changed!') : toast.error('Failed to save — check connection');
+    const res = await updateAndSave({ adminPassword: newPassword });
+    res?.ok ? toast.success('Password changed!') : toast.error(res?.error || 'Save failed');
     setSaving(false);
     setNewPassword('');
     setConfirmPassword('');
@@ -631,8 +631,8 @@ function SettingsTab({ data, updateAndSave, resetData }) {
 
   const saveWeb3FormsKey = async () => {
     setSaving(true);
-    const ok = await updateAndSave({ web3formsKey: web3formsKey.trim() });
-    ok ? toast.success('Web3Forms key saved!') : toast.error('Failed to save — check connection');
+    const res = await updateAndSave({ web3formsKey: web3formsKey.trim() });
+    res?.ok ? toast.success('Web3Forms key saved!') : toast.error(res?.error || 'Save failed');
     setSaving(false);
   };
 

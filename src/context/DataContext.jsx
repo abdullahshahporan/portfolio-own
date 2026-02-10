@@ -33,9 +33,9 @@ export function DataProvider({ children }) {
     fetchData();
   }, []);
 
-  // Save full data to MongoDB - returns true/false
+  // Save full data to MongoDB - returns { ok, error }
   const saveToDb = useCallback(async (dataToSave) => {
-    if (!authToken) return false;
+    if (!authToken) return { ok: false, error: 'Not authenticated' };
     try {
       const res = await fetch('/api/update', {
         method: 'POST',
@@ -48,12 +48,12 @@ export function DataProvider({ children }) {
       const json = await res.json();
       if (!res.ok) {
         console.error('Save failed:', json.error);
-        return false;
+        return { ok: false, error: json.error || 'Save failed' };
       }
-      return true;
+      return { ok: true };
     } catch (err) {
       console.error('Failed to save data:', err);
-      return false;
+      return { ok: false, error: err.message };
     }
   }, [authToken]);
 
