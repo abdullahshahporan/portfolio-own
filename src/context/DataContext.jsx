@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import defaultData from '../data/portfolioData';
 
 const DataContext = createContext();
@@ -8,6 +8,12 @@ export function DataProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authToken, setAuthToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  const dataRef = useRef(data);
+
+  // Keep ref in sync
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
 
   // Fetch data from MongoDB on mount
   useEffect(() => {
@@ -27,41 +33,64 @@ export function DataProvider({ children }) {
     fetchData();
   }, []);
 
-  // Save data to MongoDB (debounced via admin actions)
-  const saveToDb = useCallback(async (newData) => {
-    if (!authToken) return;
+  // Save full data to MongoDB - returns true/false
+  const saveToDb = useCallback(async (dataToSave) => {
+    if (!authToken) return false;
     try {
-      await fetch('/api/update', {
+      const res = await fetch('/api/update', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`,
         },
-        body: JSON.stringify({ data: newData }),
+        body: JSON.stringify({ data: dataToSave || dataRef.current }),
       });
+      const json = await res.json();
+      if (!res.ok) {
+        console.error('Save failed:', json.error);
+        return false;
+      }
+      return true;
     } catch (err) {
       console.error('Failed to save data:', err);
+      return false;
     }
   }, [authToken]);
 
-  const updateData = (section, newValue) => {
+  // Update a top-level section (local state only - call saveToDb separately)
+  const updateData = useCallback((section, newValue) => {
     setData(prev => {
       const updated = { ...prev, [section]: newValue };
-      if (authToken) saveToDb(updated);
+      dataRef.current = updated;
       return updated;
     });
-  };
+  }, []);
 
-  const updateNestedData = (section, key, newValue) => {
+  // Update a nested key within a section (local state only)
+  const updateNestedData = useCallback((section, key, newValue) => {
     setData(prev => {
       const updated = {
         ...prev,
         [section]: { ...prev[section], [key]: newValue },
       };
-      if (authToken) saveToDb(updated);
+      dataRef.current = updated;
       return updated;
     });
-  };
+  }, []);
+
+  // Batch update multiple sections at once, then save
+  const updateAndSave = useCallback(async (updates) => {
+    // updates is an object like { education: [...], personal: { ... } }
+    let updated;
+    setData(prev => {
+      updated = { ...prev, ...updates };
+      dataRef.current = updated;
+      return updated;
+    });
+    // Wait a tick for state to settle, then save the ref
+    await new Promise(r => setTimeout(r, 0));
+    return saveToDb(dataRef.current);
+  }, [saveToDb]);
 
   const login = async (password) => {
     try {
@@ -89,7 +118,8 @@ export function DataProvider({ children }) {
 
   const resetData = async () => {
     setData(defaultData);
-    if (authToken) saveToDb(defaultData);
+    dataRef.current = defaultData;
+    return saveToDb(defaultData);
   };
 
   return (
@@ -98,6 +128,7 @@ export function DataProvider({ children }) {
       setData,
       updateData,
       updateNestedData,
+      updateAndSave,
       isAuthenticated,
       login,
       logout,

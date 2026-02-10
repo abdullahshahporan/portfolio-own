@@ -14,7 +14,7 @@ const tabs = [
 ];
 
 export default function Admin() {
-  const { data, updateData, updateNestedData, isAuthenticated, login, logout, resetData } = usePortfolioData();
+  const { data, updateData, updateNestedData, updateAndSave, isAuthenticated, login, logout, resetData } = usePortfolioData();
   const [password, setPassword] = useState('');
   const [activeTab, setActiveTab] = useState('personal');
   const [loggingIn, setLoggingIn] = useState(false);
@@ -129,12 +129,12 @@ export default function Admin() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
               >
-                {activeTab === 'personal' && <PersonalTab data={data} updateNestedData={updateNestedData} />}
-                {activeTab === 'about' && <AboutTab data={data} updateData={updateData} updateNestedData={updateNestedData} />}
-                {activeTab === 'skills' && <SkillsTab data={data} updateData={updateData} />}
-                {activeTab === 'projects' && <ProjectsTab data={data} updateData={updateData} />}
-                {activeTab === 'education' && <EducationTab data={data} updateData={updateData} />}
-                {activeTab === 'settings' && <SettingsTab data={data} updateData={updateData} resetData={resetData} />}
+                {activeTab === 'personal' && <PersonalTab data={data} updateAndSave={updateAndSave} />}
+                {activeTab === 'about' && <AboutTab data={data} updateAndSave={updateAndSave} />}
+                {activeTab === 'skills' && <SkillsTab data={data} updateAndSave={updateAndSave} />}
+                {activeTab === 'projects' && <ProjectsTab data={data} updateAndSave={updateAndSave} />}
+                {activeTab === 'education' && <EducationTab data={data} updateAndSave={updateAndSave} />}
+                {activeTab === 'settings' && <SettingsTab data={data} updateAndSave={updateAndSave} resetData={resetData} />}
               </motion.div>
             </AnimatePresence>
           </div>
@@ -169,32 +169,33 @@ function InputField({ label, value, onChange, type = 'text', placeholder = '', r
   );
 }
 
-function SaveButton({ onClick }) {
+function SaveButton({ onClick, saving }) {
   return (
-    <button onClick={onClick}
-      className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-primary-600 to-purple-600 hover:from-primary-500 hover:to-purple-500 text-white text-sm font-medium rounded-xl shadow-lg shadow-primary-500/25 transition-all duration-300">
-      <HiSave size={16} /> Save Changes
+    <button onClick={onClick} disabled={saving}
+      className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-primary-600 to-purple-600 hover:from-primary-500 hover:to-purple-500 text-white text-sm font-medium rounded-xl shadow-lg shadow-primary-500/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+      <HiSave size={16} /> {saving ? 'Saving...' : 'Save Changes'}
     </button>
   );
 }
 
 /* ===== PERSONAL TAB ===== */
-function PersonalTab({ data, updateNestedData }) {
+function PersonalTab({ data, updateAndSave }) {
   const [form, setForm] = useState({ ...data.personal });
   const [socialForm, setSocialForm] = useState({ ...data.social });
+  const [saving, setSaving] = useState(false);
 
-  const savePersonal = () => {
-    Object.keys(form).forEach(key => {
-      updateNestedData('personal', key, form[key]);
-    });
-    toast.success('Personal info updated!');
+  const savePersonal = async () => {
+    setSaving(true);
+    const ok = await updateAndSave({ personal: { ...data.personal, ...form } });
+    ok ? toast.success('Personal info saved!') : toast.error('Failed to save — check connection');
+    setSaving(false);
   };
 
-  const saveSocial = () => {
-    Object.keys(socialForm).forEach(key => {
-      updateNestedData('social', key, socialForm[key]);
-    });
-    toast.success('Social links updated!');
+  const saveSocial = async () => {
+    setSaving(true);
+    const ok = await updateAndSave({ social: { ...data.social, ...socialForm } });
+    ok ? toast.success('Social links saved!') : toast.error('Failed to save — check connection');
+    setSaving(false);
   };
 
   return (
@@ -216,7 +217,7 @@ function PersonalTab({ data, updateNestedData }) {
             <InputField label="Resume Link" value={form.resume} onChange={e => setForm({ ...form, resume: e.target.value })} placeholder="https://drive.google.com/..." />
           </div>
         </div>
-        <SaveButton onClick={savePersonal} />
+        <SaveButton onClick={savePersonal} saving={saving} />
       </Card>
 
       <Card title="Social Links">
@@ -228,27 +229,32 @@ function PersonalTab({ data, updateNestedData }) {
           <InputField label="Twitter / X" value={socialForm.twitter} onChange={e => setSocialForm({ ...socialForm, twitter: e.target.value })} />
           <InputField label="Website" value={socialForm.website} onChange={e => setSocialForm({ ...socialForm, website: e.target.value })} />
         </div>
-        <SaveButton onClick={saveSocial} />
+        <SaveButton onClick={saveSocial} saving={saving} />
       </Card>
     </div>
   );
 }
 
 /* ===== ABOUT TAB ===== */
-function AboutTab({ data, updateData, updateNestedData }) {
+function AboutTab({ data, updateAndSave }) {
   const [desc, setDesc] = useState(data.about.description);
   const [highlights, setHighlights] = useState([...data.about.highlights]);
   const [stats, setStats] = useState([...data.about.stats]);
   const [services, setServices] = useState([...data.services]);
+  const [saving, setSaving] = useState(false);
 
-  const saveAbout = () => {
-    updateData('about', { ...data.about, description: desc, highlights, stats });
-    toast.success('About section updated!');
+  const saveAbout = async () => {
+    setSaving(true);
+    const ok = await updateAndSave({ about: { ...data.about, description: desc, highlights, stats } });
+    ok ? toast.success('About section saved!') : toast.error('Failed to save — check connection');
+    setSaving(false);
   };
 
-  const saveServices = () => {
-    updateData('services', services);
-    toast.success('Services updated!');
+  const saveServices = async () => {
+    setSaving(true);
+    const ok = await updateAndSave({ services });
+    ok ? toast.success('Services saved!') : toast.error('Failed to save — check connection');
+    setSaving(false);
   };
 
   return (
@@ -294,7 +300,7 @@ function AboutTab({ data, updateData, updateNestedData }) {
             </button>
           </div>
         </div>
-        <SaveButton onClick={saveAbout} />
+        <SaveButton onClick={saveAbout} saving={saving} />
       </Card>
 
       <Card title="Services">
@@ -327,19 +333,22 @@ function AboutTab({ data, updateData, updateNestedData }) {
             <HiPlus size={16} /> Add Service
           </button>
         </div>
-        <SaveButton onClick={saveServices} />
+        <SaveButton onClick={saveServices} saving={saving} />
       </Card>
     </div>
   );
 }
 
 /* ===== SKILLS TAB ===== */
-function SkillsTab({ data, updateData }) {
+function SkillsTab({ data, updateAndSave }) {
   const [skills, setSkills] = useState(JSON.parse(JSON.stringify(data.skills)));
+  const [saving, setSaving] = useState(false);
 
-  const save = () => {
-    updateData('skills', skills);
-    toast.success('Skills updated!');
+  const save = async () => {
+    setSaving(true);
+    const ok = await updateAndSave({ skills });
+    ok ? toast.success('Skills saved!') : toast.error('Failed to save — check connection');
+    setSaving(false);
   };
 
   const addCategory = () => {
@@ -411,19 +420,22 @@ function SkillsTab({ data, updateData }) {
         <button onClick={addCategory} className="flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-all">
           <HiPlus size={16} /> Add Category
         </button>
-        <SaveButton onClick={save} />
+        <SaveButton onClick={save} saving={saving} />
       </div>
     </div>
   );
 }
 
 /* ===== PROJECTS TAB ===== */
-function ProjectsTab({ data, updateData }) {
+function ProjectsTab({ data, updateAndSave }) {
   const [projects, setProjects] = useState(JSON.parse(JSON.stringify(data.projects)));
+  const [saving, setSaving] = useState(false);
 
-  const save = () => {
-    updateData('projects', projects);
-    toast.success('Projects updated!');
+  const save = async () => {
+    setSaving(true);
+    const ok = await updateAndSave({ projects });
+    ok ? toast.success('Projects saved!') : toast.error('Failed to save — check connection');
+    setSaving(false);
   };
 
   const addProject = () => {
@@ -492,25 +504,30 @@ function ProjectsTab({ data, updateData }) {
         <button onClick={addProject} className="flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-all">
           <HiPlus size={16} /> Add Project
         </button>
-        <SaveButton onClick={save} />
+        <SaveButton onClick={save} saving={saving} />
       </div>
     </div>
   );
 }
 
 /* ===== EDUCATION TAB ===== */
-function EducationTab({ data, updateData }) {
+function EducationTab({ data, updateAndSave }) {
   const [education, setEducation] = useState(JSON.parse(JSON.stringify(data.education)));
   const [experience, setExperience] = useState(JSON.parse(JSON.stringify(data.experience)));
+  const [saving, setSaving] = useState(false);
 
-  const saveEducation = () => {
-    updateData('education', education);
-    toast.success('Education updated!');
+  const saveEducation = async () => {
+    setSaving(true);
+    const ok = await updateAndSave({ education });
+    ok ? toast.success('Education saved!') : toast.error('Failed to save — check connection');
+    setSaving(false);
   };
 
-  const saveExperience = () => {
-    updateData('experience', experience);
-    toast.success('Experience updated!');
+  const saveExperience = async () => {
+    setSaving(true);
+    const ok = await updateAndSave({ experience });
+    ok ? toast.success('Experience saved!') : toast.error('Failed to save — check connection');
+    setSaving(false);
   };
 
   const addEdu = () => setEducation([...education, { id: Date.now(), degree: '', institution: '', duration: '', description: '', achievements: [] }]);
@@ -550,7 +567,7 @@ function EducationTab({ data, updateData }) {
         <button onClick={addEdu} className="flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-all">
           <HiPlus size={16} /> Add Education
         </button>
-        <SaveButton onClick={saveEducation} />
+        <SaveButton onClick={saveEducation} saving={saving} />
       </div>
 
       <div className="border-t border-white/5 pt-6 mt-6" />
@@ -587,37 +604,42 @@ function EducationTab({ data, updateData }) {
         <button onClick={addExp} className="flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-all">
           <HiPlus size={16} /> Add Experience
         </button>
-        <SaveButton onClick={saveExperience} />
+        <SaveButton onClick={saveExperience} saving={saving} />
       </div>
     </div>
   );
 }
 
 /* ===== SETTINGS TAB ===== */
-function SettingsTab({ data, updateData, resetData }) {
+function SettingsTab({ data, updateAndSave, resetData }) {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [web3formsKey, setWeb3formsKey] = useState(data.web3formsKey || '');
+  const [saving, setSaving] = useState(false);
 
-  const changePassword = () => {
+  const changePassword = async () => {
     if (!newPassword) { toast.error('Enter a new password'); return; }
     if (newPassword !== confirmPassword) { toast.error('Passwords do not match'); return; }
     if (newPassword.length < 4) { toast.error('Password too short (min 4 chars)'); return; }
-    updateData('adminPassword', newPassword);
-    toast.success('Password changed!');
+    setSaving(true);
+    const ok = await updateAndSave({ adminPassword: newPassword });
+    ok ? toast.success('Password changed!') : toast.error('Failed to save — check connection');
+    setSaving(false);
     setNewPassword('');
     setConfirmPassword('');
   };
 
-  const saveWeb3FormsKey = () => {
-    updateData('web3formsKey', web3formsKey.trim());
-    toast.success('Web3Forms key saved! Contact form is now active.');
+  const saveWeb3FormsKey = async () => {
+    setSaving(true);
+    const ok = await updateAndSave({ web3formsKey: web3formsKey.trim() });
+    ok ? toast.success('Web3Forms key saved!') : toast.error('Failed to save — check connection');
+    setSaving(false);
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     if (window.confirm('This will reset ALL portfolio data to defaults. Are you sure?')) {
-      resetData();
-      toast.success('Data reset to defaults!');
+      const ok = await resetData();
+      ok ? toast.success('Data reset to defaults!') : toast.error('Failed to reset');
     }
   };
 
@@ -636,11 +658,13 @@ function SettingsTab({ data, updateData, resetData }) {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) => {
+    reader.onload = async (ev) => {
       try {
         const imported = JSON.parse(ev.target.result);
-        Object.keys(imported).forEach(key => updateData(key, imported[key]));
-        toast.success('Data imported!');
+        setSaving(true);
+        const ok = await updateAndSave(imported);
+        ok ? toast.success('Data imported & saved!') : toast.error('Import failed');
+        setSaving(false);
       } catch {
         toast.error('Invalid JSON file!');
       }
@@ -655,7 +679,7 @@ function SettingsTab({ data, updateData, resetData }) {
           <InputField label="New Password" value={newPassword} type="password" onChange={e => setNewPassword(e.target.value)} />
           <InputField label="Confirm Password" value={confirmPassword} type="password" onChange={e => setConfirmPassword(e.target.value)} />
         </div>
-        <SaveButton onClick={changePassword} />
+        <SaveButton onClick={changePassword} saving={saving} />
       </Card>
 
       <Card title="Contact Form (Web3Forms)">
@@ -667,7 +691,7 @@ function SettingsTab({ data, updateData, resetData }) {
         <div className="mb-4">
           <InputField label="Web3Forms Access Key" value={web3formsKey} placeholder="e.g. xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" onChange={e => setWeb3formsKey(e.target.value)} />
         </div>
-        <SaveButton onClick={saveWeb3FormsKey} />
+        <SaveButton onClick={saveWeb3FormsKey} saving={saving} />
       </Card>
 
       <Card title="Data Management">
