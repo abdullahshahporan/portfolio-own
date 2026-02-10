@@ -17,15 +17,19 @@ export default function Admin() {
   const { data, updateData, updateNestedData, isAuthenticated, login, logout, resetData } = usePortfolioData();
   const [password, setPassword] = useState('');
   const [activeTab, setActiveTab] = useState('personal');
+  const [loggingIn, setLoggingIn] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (login(password)) {
+    setLoggingIn(true);
+    const success = await login(password);
+    if (success) {
       toast.success('Welcome to Admin Panel!');
     } else {
       toast.error('Invalid password!');
     }
     setPassword('');
+    setLoggingIn(false);
   };
 
   if (!isAuthenticated) {
@@ -59,9 +63,10 @@ export default function Admin() {
             </div>
             <button
               type="submit"
-              className="w-full px-6 py-3 bg-gradient-to-r from-primary-600 to-purple-600 hover:from-primary-500 hover:to-purple-500 text-white font-medium rounded-xl shadow-lg shadow-primary-500/25 transition-all duration-300"
+              disabled={loggingIn}
+              className="w-full px-6 py-3 bg-gradient-to-r from-primary-600 to-purple-600 hover:from-primary-500 hover:to-purple-500 text-white font-medium rounded-xl shadow-lg shadow-primary-500/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign In
+              {loggingIn ? 'Signing In...' : 'Sign In'}
             </button>
             <p className="text-center text-xs text-gray-500">Default password: admin123</p>
           </form>

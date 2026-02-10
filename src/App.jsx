@@ -2,6 +2,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import { useEffect } from 'react';
+import { usePortfolioData } from './context/DataContext';
 
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -44,6 +45,18 @@ function Portfolio() {
 
 function App() {
   const location = useLocation();
+  const { loading } = usePortfolioData();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-dark-950 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-primary-400 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-400 text-sm">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-dark-950 noise-bg">

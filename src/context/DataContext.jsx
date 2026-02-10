@@ -1,66 +1,95 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import defaultData from '../data/portfolioData';
 
 const DataContext = createContext();
 
-const STORAGE_KEY = 'portfolio_data_v1';
-
 export function DataProvider({ children }) {
-  const [data, setData] = useState(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        return { ...defaultData, ...parsed };
-      }
-    } catch (e) {
-      console.error('Error loading saved data:', e);
-    }
-    return defaultData;
-  });
-
+  const [data, setData] = useState(defaultData);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authToken, setAuthToken] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  // Fetch data from MongoDB on mount
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    } catch (e) {
-      console.error('Error saving data:', e);
+    async function fetchData() {
+      try {
+        const res = await fetch('/api/data');
+        const json = await res.json();
+        if (json.data) {
+          setData({ ...defaultData, ...json.data });
+        }
+      } catch (err) {
+        console.error('Failed to fetch portfolio data:', err);
+      } finally {
+        setLoading(false);
+      }
     }
-  }, [data]);
+    fetchData();
+  }, []);
+
+  // Save data to MongoDB (debounced via admin actions)
+  const saveToDb = useCallback(async (newData) => {
+    if (!authToken) return;
+    try {
+      await fetch('/api/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({ data: newData }),
+      });
+    } catch (err) {
+      console.error('Failed to save data:', err);
+    }
+  }, [authToken]);
 
   const updateData = (section, newValue) => {
-    setData(prev => ({
-      ...prev,
-      [section]: newValue
-    }));
+    setData(prev => {
+      const updated = { ...prev, [section]: newValue };
+      if (authToken) saveToDb(updated);
+      return updated;
+    });
   };
 
   const updateNestedData = (section, key, newValue) => {
-    setData(prev => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [key]: newValue
-      }
-    }));
+    setData(prev => {
+      const updated = {
+        ...prev,
+        [section]: { ...prev[section], [key]: newValue },
+      };
+      if (authToken) saveToDb(updated);
+      return updated;
+    });
   };
 
-  const login = (password) => {
-    if (password === data.adminPassword) {
-      setIsAuthenticated(true);
-      return true;
+  const login = async (password) => {
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setIsAuthenticated(true);
+        setAuthToken(json.token);
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
     }
-    return false;
   };
 
   const logout = () => {
     setIsAuthenticated(false);
+    setAuthToken(null);
   };
 
-  const resetData = () => {
+  const resetData = async () => {
     setData(defaultData);
-    localStorage.removeItem(STORAGE_KEY);
+    if (authToken) saveToDb(defaultData);
   };
 
   return (
@@ -72,7 +101,9 @@ export function DataProvider({ children }) {
       isAuthenticated,
       login,
       logout,
-      resetData
+      resetData,
+      loading,
+      saveToDb,
     }}>
       {children}
     </DataContext.Provider>
