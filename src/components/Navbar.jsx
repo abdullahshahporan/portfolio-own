@@ -71,10 +71,13 @@ export default function Navbar() {
   }, [isAdmin]);
 
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+    <motion.nav
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
-          ? 'bg-dark-950/85 backdrop-blur-xl border-b border-white/5 shadow-lg shadow-black/10'
+          ? 'bg-dark-950/90 backdrop-blur-2xl border-b border-white/5 shadow-xl shadow-black/20'
           : 'bg-transparent'
       }`}
     >
@@ -82,12 +85,22 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group relative z-50">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary-600 to-primary-400 flex items-center justify-center font-display font-bold text-sm text-white shadow-lg shadow-primary-500/20 group-hover:shadow-primary-500/40 transition-shadow">
+            <motion.div 
+              whileHover={{ scale: 1.05, rotate: 5 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary-600 to-primary-400 flex items-center justify-center font-display font-bold text-sm text-white shadow-lg shadow-primary-500/20 group-hover:shadow-primary-500/40 transition-shadow duration-300"
+            >
               {data.personal.name.charAt(0)}
-            </div>
+            </motion.div>
             <span className="font-display font-semibold text-lg hidden sm:block">
-              <span className="text-white">{data.personal.name.split(' ')[0]}</span>
-              <span className="text-primary-400">.</span>
+              <span className="text-white group-hover:text-primary-100 transition-colors">{data.personal.name.split(' ')[0]}</span>
+              <motion.span 
+                className="text-primary-400"
+                animate={{ opacity: [1, 0.5, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                .
+              </motion.span>
             </span>
           </Link>
 
@@ -95,18 +108,27 @@ export default function Navbar() {
           {!isAdmin && (
             <div className="hidden md:flex items-center gap-1">
               {navLinks.map((link) => (
-                <a
+                <motion.a
                   key={link.name}
                   href={link.href}
                   onClick={(e) => handleNav(e, link.href)}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                  whileHover={{ y: -2 }}
+                  whileTap={{ y: 0, scale: 0.98 }}
+                  className={`relative px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
                     activeSection === link.href.slice(1)
-                      ? 'text-primary-400 bg-primary-500/10'
-                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                      ? 'text-primary-400'
+                      : 'text-gray-400 hover:text-white'
                   }`}
                 >
                   {link.name}
-                </a>
+                  {activeSection === link.href.slice(1) && (
+                    <motion.div
+                      layoutId="activeNav"
+                      className="absolute inset-0 bg-primary-500/10 rounded-lg -z-10"
+                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    />
+                  )}
+                </motion.a>
               ))}
             </div>
           )}
@@ -119,13 +141,15 @@ export default function Navbar() {
               </Link>
             )}
             {!isAdmin && (
-              <button
+              <motion.button
                 onClick={() => setIsOpen(!isOpen)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 className="md:hidden relative z-50 p-2 text-gray-300 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
                 aria-label="Toggle menu"
               >
                 {isOpen ? <HiX size={24} /> : <HiMenuAlt3 size={24} />}
-              </button>
+              </motion.button>
             )}
           </div>
         </div>
@@ -135,11 +159,11 @@ export default function Navbar() {
       <AnimatePresence>
         {isOpen && !isAdmin && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+            animate={{ opacity: 1, backdropFilter: 'blur(20px)' }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="md:hidden fixed inset-0 z-40 bg-dark-950/95 backdrop-blur-xl"
+            transition={{ duration: 0.3 }}
+            className="md:hidden fixed inset-0 z-40 bg-dark-950/95"
           >
             <div className="flex flex-col items-center justify-center min-h-screen gap-2 px-6">
               {navLinks.map((link, i) => (
@@ -147,11 +171,11 @@ export default function Navbar() {
                   key={link.name}
                   href={link.href}
                   onClick={(e) => handleNav(e, link.href)}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  transition={{ delay: i * 0.05 }}
-                  className={`w-full max-w-xs text-center px-6 py-4 text-lg font-medium rounded-xl transition-all duration-200 ${
+                  initial={{ opacity: 0, x: -30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 30 }}
+                  transition={{ delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                  className={`w-full max-w-xs text-center px-6 py-4 text-lg font-medium rounded-xl transition-all duration-300 ${
                     activeSection === link.href.slice(1)
                       ? 'text-primary-400 bg-primary-500/10'
                       : 'text-gray-300 hover:text-white hover:bg-white/5'
@@ -164,6 +188,6 @@ export default function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
-    </nav>
+    </motion.nav>
   );
 }

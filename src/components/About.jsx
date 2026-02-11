@@ -14,27 +14,27 @@ function AnimatedCounter({ value, isInView }) {
     const prefix = value.slice(0, numMatch.index);
     const suffix = value.slice(numMatch.index + numMatch[0].length);
     let frame = 0;
-    const totalFrames = 40;
+    const totalFrames = 50;
     const timer = setInterval(() => {
       frame++;
       const progress = frame / totalFrames;
-      const eased = 1 - Math.pow(1 - progress, 3);
+      const eased = 1 - Math.pow(1 - progress, 4);
       setDisplay(`${prefix}${Math.round(target * eased)}${suffix}`);
       if (frame >= totalFrames) clearInterval(timer);
-    }, 30);
+    }, 25);
     return () => clearInterval(timer);
   }, [isInView, value]);
   return display;
 }
 
-const container = { hidden: {}, visible: { transition: { staggerChildren: 0.08 } } };
-const item = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } } };
+const container = { hidden: {}, visible: { transition: { staggerChildren: 0.1, delayChildren: 0.2 } } };
+const item = { hidden: { opacity: 0, y: 25 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } } };
 
 export default function About() {
   const { data } = usePortfolioData();
   const { about, personal, services } = data;
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-80px' });
+  const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   const iconMap = {
     web: <HiGlobe className="w-6 h-6" />,
@@ -44,16 +44,37 @@ export default function About() {
   };
 
   return (
-    <section id="about" className="relative py-24 lg:py-32" ref={ref}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="about" className="relative py-24 lg:py-32 overflow-hidden" ref={ref}>
+      {/* Background decoration */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={isInView ? { opacity: 1 } : {}}
+        transition={{ duration: 1 }}
+        className="absolute top-20 -right-40 w-80 h-80 bg-primary-500/5 rounded-full blur-[100px]"
+      />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={isInView ? { opacity: 1 } : {}}
+        transition={{ duration: 1, delay: 0.3 }}
+        className="absolute bottom-20 -left-40 w-80 h-80 bg-accent-gold/5 rounded-full blur-[100px]"
+      />
+      
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 40 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="text-center mb-16"
         >
-          <span className="text-primary-400 font-mono text-sm font-medium tracking-wider uppercase">About Me</span>
+          <motion.span 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={isInView ? { opacity: 1, scale: 1 } : {}}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="inline-block text-primary-400 font-mono text-sm font-medium tracking-wider uppercase"
+          >
+            About Me
+          </motion.span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold mt-3 mb-4">
             Know Who{' '}
             <span className="bg-gradient-to-r from-primary-400 to-accent-gold bg-clip-text text-transparent">I Am</span>
@@ -61,7 +82,7 @@ export default function About() {
           <motion.div
             initial={{ scaleX: 0 }}
             animate={isInView ? { scaleX: 1 } : {}}
-            transition={{ duration: 0.6, delay: 0.3 }}
+            transition={{ duration: 0.7, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
             className="w-20 h-1 bg-gradient-to-r from-primary-500 to-accent-gold mx-auto rounded-full origin-center"
           />
         </motion.div>
