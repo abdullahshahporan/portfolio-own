@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HiLockClosed, HiUser, HiCode, HiCollection, HiAcademicCap, HiCog, HiLogout, HiPlus, HiTrash, HiSave, HiRefresh } from 'react-icons/hi';
+import { HiLockClosed, HiUser, HiCode, HiCollection, HiAcademicCap, HiCog, HiLogout, HiPlus, HiTrash, HiSave, HiRefresh, HiChevronUp, HiChevronDown } from 'react-icons/hi';
 import { usePortfolioData } from '../context/DataContext';
 import toast from 'react-hot-toast';
 
@@ -337,9 +337,12 @@ function AboutTab({ data, updateAndSave }) {
 }
 
 /* ===== SKILLS TAB ===== */
+const EMOJI_OPTIONS = ['⚡', '🚀', '🛠️', '🔬', '📊', '🎯', '💻', '🌐', '📱', '🧠', '🎨', '📚', '🔧', '⚙️', '🏗️', '🧪'];
+
 function SkillsTab({ data, updateAndSave }) {
   const [skills, setSkills] = useState(JSON.parse(JSON.stringify(data.skills)));
   const [saving, setSaving] = useState(false);
+  const [emojiPicker, setEmojiPicker] = useState(null); // index of category showing picker
 
   const save = async () => {
     setSaving(true);
@@ -349,11 +352,29 @@ function SkillsTab({ data, updateAndSave }) {
   };
 
   const addCategory = () => {
-    setSkills([...skills, { category: 'New Category', items: [] }]);
+    setSkills([...skills, { category: 'New Category', icon: '🎯', items: [] }]);
   };
 
   const removeCategory = (i) => {
     setSkills(skills.filter((_, j) => j !== i));
+    if (emojiPicker === i) setEmojiPicker(null);
+  };
+
+  const moveCategory = (from, dir) => {
+    const to = from + dir;
+    if (to < 0 || to >= skills.length) return;
+    const n = [...skills];
+    [n[from], n[to]] = [n[to], n[from]];
+    setSkills(n);
+    if (emojiPicker === from) setEmojiPicker(to);
+    else if (emojiPicker === to) setEmojiPicker(from);
+  };
+
+  const setIcon = (catIndex, icon) => {
+    const n = [...skills];
+    n[catIndex] = { ...n[catIndex], icon };
+    setSkills(n);
+    setEmojiPicker(null);
   };
 
   const addSkill = (catIndex) => {
@@ -372,42 +393,90 @@ function SkillsTab({ data, updateAndSave }) {
     <div className="space-y-6">
       {skills.map((cat, catIndex) => (
         <Card key={catIndex}>
-          <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3 mb-5">
+            {/* Reorder buttons */}
+            <div className="flex flex-col -space-y-0.5">
+              <button
+                onClick={() => moveCategory(catIndex, -1)}
+                disabled={catIndex === 0}
+                className="p-1 text-gray-500 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed rounded transition-colors"
+                title="Move up"
+              >
+                <HiChevronUp size={16} />
+              </button>
+              <button
+                onClick={() => moveCategory(catIndex, 1)}
+                disabled={catIndex === skills.length - 1}
+                className="p-1 text-gray-500 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed rounded transition-colors"
+                title="Move down"
+              >
+                <HiChevronDown size={16} />
+              </button>
+            </div>
+
+            {/* Emoji icon button */}
+            <div className="relative">
+              <button
+                onClick={() => setEmojiPicker(emojiPicker === catIndex ? null : catIndex)}
+                className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:border-white/20 text-lg transition-all"
+                title="Change icon"
+              >
+                {cat.icon || '⚡'}
+              </button>
+              <AnimatePresence>
+                {emojiPicker === catIndex && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9, y: -4 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    className="absolute top-12 left-0 z-20 p-2 bg-dark-800 border border-white/10 rounded-xl shadow-xl grid grid-cols-4 gap-1 min-w-[160px]"
+                  >
+                    {EMOJI_OPTIONS.map((emoji) => (
+                      <button
+                        key={emoji}
+                        onClick={() => setIcon(catIndex, emoji)}
+                        className={`w-9 h-9 flex items-center justify-center rounded-lg text-lg hover:bg-white/10 transition-colors ${cat.icon === emoji ? 'bg-primary-500/20 ring-1 ring-primary-500/40' : ''}`}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Category name */}
             <input
               value={cat.category}
               onChange={e => { const n = [...skills]; n[catIndex] = { ...n[catIndex], category: e.target.value }; setSkills(n); }}
-              className="text-lg font-display font-semibold bg-transparent text-white border-b border-transparent hover:border-white/20 focus:border-primary-500/50 focus:outline-none transition-all px-1 py-0.5"
+              className="flex-1 text-lg font-display font-semibold bg-transparent text-white border-b border-transparent hover:border-white/20 focus:border-primary-500/50 focus:outline-none transition-all px-1 py-0.5"
+              placeholder="Category name"
             />
+
+            {/* Count badge + delete */}
+            <span className="text-xs text-gray-500 font-mono px-2 py-1 bg-white/5 rounded-lg">{cat.items.length} skills</span>
             <button onClick={() => removeCategory(catIndex)} className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
               <HiTrash size={16} />
             </button>
           </div>
 
-          <div className="space-y-3 mb-4">
+          <div className="space-y-2.5 mb-4">
             {cat.items.map((skill, si) => (
-              <div key={si} className="flex items-center gap-3">
+              <div key={si} className="flex items-center gap-3 group">
+                <span className="text-xs text-gray-600 font-mono w-5 text-right">{si + 1}</span>
                 <input
                   value={skill.name}
                   onChange={e => { const n = JSON.parse(JSON.stringify(skills)); n[catIndex].items[si].name = e.target.value; setSkills(n); }}
                   className="flex-1 px-3 py-2 bg-dark/50 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-primary-500/50 transition-all"
                   placeholder="Skill name"
                 />
-                <div className="flex items-center gap-2 w-36">
-                  <input
-                    type="range" min="0" max="100"
-                    value={skill.level}
-                    onChange={e => { const n = JSON.parse(JSON.stringify(skills)); n[catIndex].items[si].level = parseInt(e.target.value); setSkills(n); }}
-                    className="flex-1 accent-primary-500"
-                  />
-                  <span className="text-xs font-mono text-gray-400 w-8 text-right">{skill.level}%</span>
-                </div>
-                <button onClick={() => removeSkill(catIndex, si)} className="p-1.5 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                <button onClick={() => removeSkill(catIndex, si)} className="p-1.5 text-red-400/50 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100">
                   <HiTrash size={14} />
                 </button>
               </div>
             ))}
           </div>
-          <button onClick={() => addSkill(catIndex)} className="flex items-center gap-1 text-sm text-primary-400 hover:text-primary-300">
+          <button onClick={() => addSkill(catIndex)} className="flex items-center gap-1 text-sm text-primary-400 hover:text-primary-300 transition-colors">
             <HiPlus size={16} /> Add Skill
           </button>
         </Card>

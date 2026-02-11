@@ -158,7 +158,12 @@ export default function Contact() {
             Contact{' '}
             <span className="bg-gradient-to-r from-primary-400 to-accent-gold bg-clip-text text-transparent">Me</span>
           </h2>
-          <div className="w-20 h-1 bg-gradient-to-r from-primary-500 to-accent-gold mx-auto rounded-full" />
+          <motion.div
+            initial={{ scaleX: 0 }}
+            animate={isInView ? { scaleX: 1 } : {}}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="w-20 h-1 bg-gradient-to-r from-primary-500 to-accent-gold mx-auto rounded-full origin-center"
+          />
           <p className="text-gray-400 mt-4 max-w-xl mx-auto">
             Feel free to reach out for collaborations, opportunities, or just to say hello!
           </p>
@@ -207,16 +212,18 @@ export default function Contact() {
               <h4 className="text-sm font-medium text-gray-400 mb-3">Follow Me</h4>
               <div className="flex gap-3">
                 {socialLinks.map((link, i) => (
-                  <a
+                  <motion.a
                     key={i}
                     href={link.href}
                     target="_blank"
                     rel="noreferrer"
-                    className={`w-11 h-11 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-gray-400 transition-all duration-300 hover:-translate-y-1 ${link.color}`}
+                    whileHover={{ y: -4, scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`w-11 h-11 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-gray-400 transition-all duration-300 ${link.color}`}
                     aria-label={link.label}
                   >
                     {link.icon}
-                  </a>
+                  </motion.a>
                 ))}
               </div>
             </div>

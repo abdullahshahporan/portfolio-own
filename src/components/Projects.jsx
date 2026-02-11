@@ -55,9 +55,11 @@ export default function Projects() {
           className="flex flex-wrap justify-center gap-2 mb-12"
         >
           {displayTags.map((tag) => (
-            <button
+            <motion.button
               key={tag}
               onClick={() => { setFilter(tag); setShowAll(false); }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               className={`px-4 py-2 text-sm font-medium rounded-xl border transition-all duration-300 ${
                 filter === tag
                   ? 'bg-primary-600 border-primary-500 text-white shadow-lg shadow-primary-500/20'
@@ -65,7 +67,7 @@ export default function Projects() {
               }`}
             >
               {tag === 'all' ? 'All Projects' : tag}
-            </button>
+            </motion.button>
           ))}
         </motion.div>
 
@@ -76,11 +78,12 @@ export default function Projects() {
               <motion.div
                 key={project.id}
                 layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.4, delay: i * 0.05 }}
-                className="group relative bg-dark-100/50 border border-white/5 rounded-2xl overflow-hidden hover:border-primary-500/30 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-500/5"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.4, delay: i * 0.06 }}
+                whileHover={{ y: -8 }}
+                className="group relative bg-dark-100/50 border border-white/5 rounded-2xl overflow-hidden hover:border-primary-500/30 transition-all duration-500 hover:shadow-xl hover:shadow-primary-500/5"
               >
                 {/* Project Image / Gradient */}
                 <div className="h-48 relative overflow-hidden">

@@ -7,7 +7,7 @@ export default function Education() {
   const { data } = usePortfolioData();
   const { education, experience } = data;
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const isInView = useInView(ref, { once: true, margin: '-80px' });
 
   return (
     <section id="education" className="relative py-24 lg:py-32" ref={ref}>
@@ -26,7 +26,12 @@ export default function Education() {
             Education &{' '}
             <span className="bg-gradient-to-r from-primary-400 to-accent-gold bg-clip-text text-transparent">Experience</span>
           </h2>
-          <div className="w-20 h-1 bg-gradient-to-r from-primary-500 to-accent-gold mx-auto rounded-full" />
+          <motion.div
+            initial={{ scaleX: 0 }}
+            animate={isInView ? { scaleX: 1 } : {}}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="w-20 h-1 bg-gradient-to-r from-primary-500 to-accent-gold mx-auto rounded-full origin-center"
+          />
         </motion.div>
 
         <div className="grid lg:grid-cols-2 gap-12">
@@ -37,23 +42,43 @@ export default function Education() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <div className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-primary-500/10 text-primary-400">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={isInView ? { scale: 1 } : {}}
+                transition={{ type: 'spring', delay: 0.3, stiffness: 300 }}
+                className="w-10 h-10 flex items-center justify-center rounded-xl bg-primary-500/10 text-primary-400"
+              >
                 <HiAcademicCap size={22} />
-              </div>
+              </motion.div>
               <h3 className="text-xl font-display font-bold">Education</h3>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-6 relative">
+              {/* Animated timeline line */}
+              <motion.div
+                initial={{ scaleY: 0 }}
+                animate={isInView ? { scaleY: 1 } : {}}
+                transition={{ duration: 0.8, delay: 0.4 }}
+                className="absolute left-[7px] top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary-500/40 to-primary-500/5 origin-top"
+              />
               {education.map((edu, i) => (
                 <motion.div
                   key={edu.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ duration: 0.5, delay: 0.3 + i * 0.1 }}
-                  className="relative pl-8 border-l-2 border-primary-500/30"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={isInView ? { opacity: 1, x: 0 } : {}}
+                  transition={{ duration: 0.5, delay: 0.4 + i * 0.15 }}
+                  className="relative pl-8"
                 >
-                  <div className="absolute left-0 top-0 -translate-x-[9px] w-4 h-4 rounded-full bg-primary-500 border-4 border-dark" />
-                  <div className="p-5 bg-dark-100/50 border border-white/5 rounded-xl hover:border-primary-500/20 transition-all duration-300">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={isInView ? { scale: 1 } : {}}
+                    transition={{ type: 'spring', delay: 0.5 + i * 0.15, stiffness: 300 }}
+                    className="absolute left-0 top-5 -translate-x-0 w-4 h-4 rounded-full bg-primary-500 border-4 border-dark-950 z-10"
+                  />
+                  <motion.div
+                    whileHover={{ x: 4 }}
+                    className="p-5 bg-dark-100/50 border border-white/5 rounded-xl hover:border-primary-500/20 transition-all duration-300"
+                  >
                     <span className="text-xs font-mono text-primary-400 mb-1 block">{edu.duration}</span>
                     <h4 className="text-lg font-semibold text-white mb-1">{edu.degree}</h4>
                     <p className="text-sm text-gray-400 mb-3">{edu.institution}</p>
@@ -68,7 +93,7 @@ export default function Education() {
                         ))}
                       </ul>
                     )}
-                  </div>
+                  </motion.div>
                 </motion.div>
               ))}
             </div>
@@ -81,23 +106,42 @@ export default function Education() {
             transition={{ duration: 0.6, delay: 0.3 }}
           >
             <div className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-accent-coral/10 text-accent-coral">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={isInView ? { scale: 1 } : {}}
+                transition={{ type: 'spring', delay: 0.4, stiffness: 300 }}
+                className="w-10 h-10 flex items-center justify-center rounded-xl bg-accent-coral/10 text-accent-coral"
+              >
                 <HiBriefcase size={22} />
-              </div>
+              </motion.div>
               <h3 className="text-xl font-display font-bold">Experience</h3>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-6 relative">
+              <motion.div
+                initial={{ scaleY: 0 }}
+                animate={isInView ? { scaleY: 1 } : {}}
+                transition={{ duration: 0.8, delay: 0.5 }}
+                className="absolute left-[7px] top-0 bottom-0 w-0.5 bg-gradient-to-b from-accent-coral/40 to-accent-coral/5 origin-top"
+              />
               {experience.map((exp, i) => (
                 <motion.div
                   key={exp.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ duration: 0.5, delay: 0.4 + i * 0.1 }}
-                  className="relative pl-8 border-l-2 border-accent-coral/30"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={isInView ? { opacity: 1, x: 0 } : {}}
+                  transition={{ duration: 0.5, delay: 0.5 + i * 0.15 }}
+                  className="relative pl-8"
                 >
-                  <div className="absolute left-0 top-0 -translate-x-[9px] w-4 h-4 rounded-full bg-accent-coral border-4 border-dark" />
-                  <div className="p-5 bg-dark-100/50 border border-white/5 rounded-xl hover:border-accent-coral/20 transition-all duration-300">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={isInView ? { scale: 1 } : {}}
+                    transition={{ type: 'spring', delay: 0.6 + i * 0.15, stiffness: 300 }}
+                    className="absolute left-0 top-5 -translate-x-0 w-4 h-4 rounded-full bg-accent-coral border-4 border-dark-950 z-10"
+                  />
+                  <motion.div
+                    whileHover={{ x: 4 }}
+                    className="p-5 bg-dark-100/50 border border-white/5 rounded-xl hover:border-accent-coral/20 transition-all duration-300"
+                  >
                     <span className="text-xs font-mono text-accent-coral mb-1 block">{exp.duration}</span>
                     <h4 className="text-lg font-semibold text-white mb-1">{exp.role}</h4>
                     <p className="text-sm text-gray-400 mb-3">{exp.company}</p>
@@ -112,7 +156,7 @@ export default function Education() {
                         ))}
                       </ul>
                     )}
-                  </div>
+                  </motion.div>
                 </motion.div>
               ))}
             </div>
