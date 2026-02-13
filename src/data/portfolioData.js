@@ -233,6 +233,7 @@ const defaultData = {
       icon: "design"
     }
   ],
+  customSections: [],
   web3formsKey: ""
 };
 

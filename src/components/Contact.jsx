@@ -190,7 +190,9 @@ export default function Contact() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={isInView ? { opacity: 1, x: 0 } : {}}
                   transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
-                  className="flex items-start gap-4 p-4 bg-dark-100/50 border border-white/5 rounded-xl hover:border-primary-500/20 transition-all duration-300"
+                  whileHover={{ x: 4, scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex items-start gap-4 p-4 bg-dark-100/50 border border-white/5 rounded-xl hover:border-primary-500/20 hover:bg-dark-100/70 hover:shadow-lg hover:shadow-primary-500/5 transition-all duration-300 cursor-pointer"
                 >
                   <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-primary-500/10 text-primary-400 flex-shrink-0">
                     {info.icon}
@@ -282,13 +284,15 @@ export default function Contact() {
                   placeholder="Your message..."
                 />
               </div>
-              <button
+              <motion.button
                 type="submit"
                 disabled={sending}
-                className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-accent-deep to-primary-500 hover:from-primary-600 hover:to-primary-400 text-white font-medium rounded-xl shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-accent-deep to-primary-500 hover:from-primary-600 hover:to-primary-400 text-white font-medium rounded-xl shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitted ? '✓ Message Sent!' : sending ? 'Sending...' : 'Send Message'}
-              </button>
+              </motion.button>
             </form>
           </motion.div>
         </div>

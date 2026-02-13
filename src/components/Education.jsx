@@ -76,11 +76,12 @@ export default function Education() {
                     className="absolute left-0 top-5 -translate-x-0 w-4 h-4 rounded-full bg-primary-500 border-4 border-dark-950 z-10"
                   />
                   <motion.div
-                    whileHover={{ x: 4 }}
-                    className="p-5 bg-dark-100/50 border border-white/5 rounded-xl hover:border-primary-500/20 transition-all duration-300"
+                    whileHover={{ x: 4, scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                    className="p-5 bg-dark-100/50 border border-white/5 rounded-xl hover:border-primary-500/20 hover:bg-dark-100/70 hover:shadow-lg hover:shadow-primary-500/5 transition-all duration-300 cursor-pointer"
                   >
                     <span className="text-xs font-mono text-primary-400 mb-1 block">{edu.duration}</span>
-                    <h4 className="text-lg font-semibold text-white mb-1">{edu.degree}</h4>
+                    <h4 className="text-lg font-semibold text-white mb-1 group-hover:text-primary-300 transition-colors">{edu.degree}</h4>
                     <p className="text-sm text-gray-400 mb-3">{edu.institution}</p>
                     <p className="text-sm text-gray-500 mb-3">{edu.description}</p>
                     {edu.achievements && edu.achievements.length > 0 && (
@@ -139,11 +140,12 @@ export default function Education() {
                     className="absolute left-0 top-5 -translate-x-0 w-4 h-4 rounded-full bg-accent-coral border-4 border-dark-950 z-10"
                   />
                   <motion.div
-                    whileHover={{ x: 4 }}
-                    className="p-5 bg-dark-100/50 border border-white/5 rounded-xl hover:border-accent-coral/20 transition-all duration-300"
+                    whileHover={{ x: 4, scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                    className="p-5 bg-dark-100/50 border border-white/5 rounded-xl hover:border-accent-coral/20 hover:bg-dark-100/70 hover:shadow-lg hover:shadow-accent-coral/5 transition-all duration-300 cursor-pointer"
                   >
                     <span className="text-xs font-mono text-accent-coral mb-1 block">{exp.duration}</span>
-                    <h4 className="text-lg font-semibold text-white mb-1">{exp.role}</h4>
+                    <h4 className="text-lg font-semibold text-white mb-1 group-hover:text-accent-coral transition-colors">{exp.role}</h4>
                     <p className="text-sm text-gray-400 mb-3">{exp.company}</p>
                     <p className="text-sm text-gray-500 mb-3">{exp.description}</p>
                     {exp.responsibilities && exp.responsibilities.length > 0 && (

@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HiLockClosed, HiUser, HiCode, HiCollection, HiAcademicCap, HiCog, HiLogout, HiPlus, HiTrash, HiSave, HiRefresh, HiChevronUp, HiChevronDown } from 'react-icons/hi';
+import { HiLockClosed, HiUser, HiCode, HiCollection, HiAcademicCap, HiCog, HiLogout, HiPlus, HiTrash, HiSave, HiRefresh, HiChevronUp, HiChevronDown, HiViewGrid } from 'react-icons/hi';
 import { usePortfolioData } from '../context/DataContext';
 import toast from 'react-hot-toast';
 
@@ -10,6 +10,7 @@ const tabs = [
   { id: 'skills', label: 'Skills', icon: HiCog },
   { id: 'projects', label: 'Projects', icon: HiCollection },
   { id: 'education', label: 'Education & Exp', icon: HiAcademicCap },
+  { id: 'sections', label: 'Custom Sections', icon: HiViewGrid },
   { id: 'settings', label: 'Settings', icon: HiCog },
 ];
 
@@ -131,6 +132,7 @@ export default function Admin() {
                 {activeTab === 'skills' && <SkillsTab data={data} updateAndSave={updateAndSave} />}
                 {activeTab === 'projects' && <ProjectsTab data={data} updateAndSave={updateAndSave} />}
                 {activeTab === 'education' && <EducationTab data={data} updateAndSave={updateAndSave} />}
+                {activeTab === 'sections' && <SectionsTab data={data} updateAndSave={updateAndSave} />}
                 {activeTab === 'settings' && <SettingsTab data={data} updateAndSave={updateAndSave} resetData={resetData} />}
               </motion.div>
             </AnimatePresence>
@@ -672,6 +674,305 @@ function EducationTab({ data, updateAndSave }) {
         </button>
         <SaveButton onClick={saveExperience} saving={saving} />
       </div>
+    </div>
+  );
+}
+
+/* ===== CUSTOM SECTIONS TAB ===== */
+const SECTION_ICONS = ['📌', '🎯', '⭐', '🏆', '📚', '🎨', '💡', '🔥', '✨', '🚀', '💼', '🎓', '📝', '🌟', '💻', '🔧'];
+const LAYOUT_OPTIONS = [
+  { value: 'grid', label: 'Grid (Cards)' },
+  { value: 'list', label: 'List (Vertical)' },
+];
+
+function SectionsTab({ data, updateAndSave }) {
+  const [sections, setSections] = useState(JSON.parse(JSON.stringify(data.customSections || [])));
+  const [saving, setSaving] = useState(false);
+  const [expandedSection, setExpandedSection] = useState(null);
+
+  const save = async () => {
+    setSaving(true);
+    const res = await updateAndSave({ customSections: sections });
+    res?.ok ? toast.success('Custom sections saved!') : toast.error(res?.error || 'Save failed');
+    setSaving(false);
+  };
+
+  const addSection = () => {
+    const newSection = {
+      id: Date.now(),
+      title: 'New Section',
+      subtitle: '',
+      description: '',
+      layout: 'grid',
+      enabled: true,
+      items: []
+    };
+    setSections([...sections, newSection]);
+    setExpandedSection(newSection.id);
+  };
+
+  const removeSection = (id) => {
+    setSections(sections.filter(s => s.id !== id));
+    if (expandedSection === id) setExpandedSection(null);
+  };
+
+  const updateSection = (id, field, value) => {
+    setSections(sections.map(s => s.id === id ? { ...s, [field]: value } : s));
+  };
+
+  const moveSection = (index, dir) => {
+    const newIndex = index + dir;
+    if (newIndex < 0 || newIndex >= sections.length) return;
+    const newSections = [...sections];
+    [newSections[index], newSections[newIndex]] = [newSections[newIndex], newSections[index]];
+    setSections(newSections);
+  };
+
+  const addItem = (sectionId) => {
+    setSections(sections.map(s => {
+      if (s.id === sectionId) {
+        return {
+          ...s,
+          items: [...s.items, { id: Date.now(), icon: '📌', title: '', description: '', link: '' }]
+        };
+      }
+      return s;
+    }));
+  };
+
+  const updateItem = (sectionId, itemId, field, value) => {
+    setSections(sections.map(s => {
+      if (s.id === sectionId) {
+        return {
+          ...s,
+          items: s.items.map(item => item.id === itemId ? { ...item, [field]: value } : item)
+        };
+      }
+      return s;
+    }));
+  };
+
+  const removeItem = (sectionId, itemId) => {
+    setSections(sections.map(s => {
+      if (s.id === sectionId) {
+        return { ...s, items: s.items.filter(item => item.id !== itemId) };
+      }
+      return s;
+    }));
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-display font-semibold text-white">Custom Sections</h3>
+          <p className="text-sm text-gray-500">Add custom content sections to your portfolio</p>
+        </div>
+        <button onClick={addSection} className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white text-sm font-medium rounded-xl transition-all">
+          <HiPlus size={16} /> Add Section
+        </button>
+      </div>
+
+      {sections.length === 0 ? (
+        <Card>
+          <div className="text-center py-8">
+            <HiViewGrid size={48} className="mx-auto text-gray-600 mb-4" />
+            <p className="text-gray-400 mb-2">No custom sections yet</p>
+            <p className="text-sm text-gray-500">Add sections like Certifications, Awards, Testimonials, etc.</p>
+          </div>
+        </Card>
+      ) : (
+        <AnimatePresence>
+          {sections.map((section, index) => (
+            <motion.div
+              key={section.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Card>
+                {/* Section Header */}
+                <div className="flex items-center gap-3 mb-4">
+                  {/* Reorder buttons */}
+                  <div className="flex flex-col -space-y-0.5">
+                    <button
+                      onClick={() => moveSection(index, -1)}
+                      disabled={index === 0}
+                      className="p-1 text-gray-500 hover:text-white disabled:opacity-20 rounded transition-colors"
+                    >
+                      <HiChevronUp size={16} />
+                    </button>
+                    <button
+                      onClick={() => moveSection(index, 1)}
+                      disabled={index === sections.length - 1}
+                      className="p-1 text-gray-500 hover:text-white disabled:opacity-20 rounded transition-colors"
+                    >
+                      <HiChevronDown size={16} />
+                    </button>
+                  </div>
+
+                  {/* Enable/Disable Toggle */}
+                  <button
+                    onClick={() => updateSection(section.id, 'enabled', !section.enabled)}
+                    className={`w-10 h-6 rounded-full relative transition-colors ${section.enabled ? 'bg-primary-500' : 'bg-gray-700'}`}
+                  >
+                    <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${section.enabled ? 'left-5' : 'left-1'}`} />
+                  </button>
+
+                  {/* Section Title */}
+                  <input
+                    value={section.title}
+                    onChange={e => updateSection(section.id, 'title', e.target.value)}
+                    className="flex-1 text-lg font-display font-semibold bg-transparent text-white border-b border-transparent hover:border-white/20 focus:border-primary-500/50 focus:outline-none transition-all px-1"
+                    placeholder="Section Title"
+                  />
+
+                  {/* Expand/Collapse */}
+                  <button
+                    onClick={() => setExpandedSection(expandedSection === section.id ? null : section.id)}
+                    className="px-3 py-1.5 text-xs text-gray-400 hover:text-white bg-white/5 rounded-lg transition-colors"
+                  >
+                    {expandedSection === section.id ? 'Collapse' : 'Edit'}
+                  </button>
+
+                  {/* Delete */}
+                  <button onClick={() => removeSection(section.id)} className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                    <HiTrash size={16} />
+                  </button>
+                </div>
+
+                {/* Expanded Content */}
+                <AnimatePresence>
+                  {expandedSection === section.id && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="space-y-4 overflow-hidden"
+                    >
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <InputField
+                          label="Subtitle (optional)"
+                          value={section.subtitle || ''}
+                          onChange={e => updateSection(section.id, 'subtitle', e.target.value)}
+                          placeholder="e.g., My Achievements"
+                        />
+                        <div>
+                          <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wider">Layout</label>
+                          <select
+                            value={section.layout || 'grid'}
+                            onChange={e => updateSection(section.id, 'layout', e.target.value)}
+                            className="w-full px-4 py-2.5 bg-dark/50 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-primary-500/50 transition-all"
+                          >
+                            {LAYOUT_OPTIONS.map(opt => (
+                              <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="sm:col-span-2">
+                          <InputField
+                            label="Description (optional)"
+                            value={section.description || ''}
+                            onChange={e => updateSection(section.id, 'description', e.target.value)}
+                            rows={2}
+                            placeholder="Brief description about this section..."
+                          />
+                        </div>
+                      </div>
+
+                      {/* Items */}
+                      <div className="border-t border-white/5 pt-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Items ({section.items.length})</label>
+                          <button
+                            onClick={() => addItem(section.id)}
+                            className="flex items-center gap-1 text-sm text-primary-400 hover:text-primary-300"
+                          >
+                            <HiPlus size={14} /> Add Item
+                          </button>
+                        </div>
+
+                        <div className="space-y-3">
+                          {section.items.map((item, itemIndex) => (
+                            <motion.div
+                              key={item.id}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              className="p-4 bg-dark/30 border border-white/5 rounded-xl space-y-3"
+                            >
+                              <div className="flex items-center gap-3">
+                                {/* Icon Selector */}
+                                <div className="relative group">
+                                  <button className="w-10 h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 text-lg hover:border-white/20 transition-all">
+                                    {item.icon || '📌'}
+                                  </button>
+                                  <div className="absolute top-12 left-0 z-20 p-2 bg-dark-800 border border-white/10 rounded-xl shadow-xl grid grid-cols-4 gap-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                                    {SECTION_ICONS.map(icon => (
+                                      <button
+                                        key={icon}
+                                        onClick={() => updateItem(section.id, item.id, 'icon', icon)}
+                                        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors"
+                                      >
+                                        {icon}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                <input
+                                  value={item.title}
+                                  onChange={e => updateItem(section.id, item.id, 'title', e.target.value)}
+                                  className="flex-1 px-3 py-2 bg-dark/50 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-primary-500/50 transition-all"
+                                  placeholder="Item title"
+                                />
+
+                                <button
+                                  onClick={() => removeItem(section.id, item.id)}
+                                  className="p-2 text-red-400/60 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                                >
+                                  <HiTrash size={14} />
+                                </button>
+                              </div>
+
+                              <div className="grid sm:grid-cols-2 gap-3">
+                                <textarea
+                                  value={item.description || ''}
+                                  onChange={e => updateItem(section.id, item.id, 'description', e.target.value)}
+                                  className="px-3 py-2 bg-dark/50 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-primary-500/50 transition-all resize-none"
+                                  placeholder="Description (optional)"
+                                  rows={2}
+                                />
+                                <input
+                                  value={item.link || ''}
+                                  onChange={e => updateItem(section.id, item.id, 'link', e.target.value)}
+                                  className="px-3 py-2 bg-dark/50 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-primary-500/50 transition-all h-fit"
+                                  placeholder="Link URL (optional)"
+                                />
+                              </div>
+                            </motion.div>
+                          ))}
+
+                          {section.items.length === 0 && (
+                            <p className="text-sm text-gray-500 text-center py-4">No items yet. Add items to display in this section.</p>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </Card>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      )}
+
+      {sections.length > 0 && (
+        <div className="flex justify-end">
+          <SaveButton onClick={save} saving={saving} />
+        </div>
+      )}
     </div>
   );
 }

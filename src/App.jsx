@@ -12,6 +12,7 @@ import Projects from './components/Projects';
 import Education from './components/Education';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
+import CustomSections from './components/CustomSections';
 import Admin from './pages/Admin';
 
 // Scroll Progress Bar Component
@@ -149,6 +150,7 @@ function Portfolio() {
       <Skills />
       <Projects />
       <Education />
+      <CustomSections />
       <Contact />
       <Footer />
     </motion.div>

@@ -133,24 +133,28 @@ export default function Projects() {
                   {/* Links */}
                   <div className="flex items-center gap-3">
                     {project.github && (
-                      <a
+                      <motion.a
                         href={project.github}
                         target="_blank"
                         rel="noreferrer"
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        whileTap={{ scale: 0.95 }}
                         className="flex items-center gap-2 px-4 py-2 text-sm bg-white/5 border border-white/10 rounded-lg text-gray-300 hover:text-white hover:border-white/20 hover:bg-white/10 transition-all duration-300"
                       >
                         <FaGithub size={14} /> Code
-                      </a>
+                      </motion.a>
                     )}
                     {project.live && (
-                      <a
+                      <motion.a
                         href={project.live}
                         target="_blank"
                         rel="noreferrer"
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        whileTap={{ scale: 0.95 }}
                         className="flex items-center gap-2 px-4 py-2 text-sm bg-primary-600/20 border border-primary-500/30 rounded-lg text-primary-300 hover:bg-primary-600/30 hover:text-white transition-all duration-300"
                       >
                         <FaExternalLinkAlt size={12} /> Live
-                      </a>
+                      </motion.a>
                     )}
                   </div>
                 </div>
@@ -166,12 +170,14 @@ export default function Projects() {
             animate={isInView ? { opacity: 1 } : {}}
             className="text-center mt-10"
           >
-            <button
+            <motion.button
               onClick={() => setShowAll(!showAll)}
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.97 }}
               className="px-8 py-3 bg-white/5 border border-white/10 hover:border-primary-500/30 hover:bg-white/10 text-gray-300 hover:text-white font-medium rounded-xl transition-all duration-300"
             >
               {showAll ? 'Show Less' : `Show All (${filtered.length})`}
-            </button>
+            </motion.button>
           </motion.div>
         )}
       </div>
