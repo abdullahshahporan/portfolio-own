@@ -37,7 +37,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Password required' });
     }
 
-    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+    const adminPassword = process.env.ADMIN_PASSWORD || 'Admin123@';
 
     // Try MongoDB first for stored password
     let storedPassword = adminPassword;

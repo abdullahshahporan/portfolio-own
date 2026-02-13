@@ -5,8 +5,18 @@ const DataContext = createContext();
 
 export function DataProvider({ children }) {
   const [data, setData] = useState(defaultData);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [authToken, setAuthToken] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !!localStorage.getItem('admin_token');
+    }
+    return false;
+  });
+  const [authToken, setAuthToken] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('admin_token');
+    }
+    return null;
+  });
   const [loading, setLoading] = useState(true);
   const dataRef = useRef(data);
 
@@ -103,6 +113,7 @@ export function DataProvider({ children }) {
       if (json.success) {
         setIsAuthenticated(true);
         setAuthToken(json.token);
+        localStorage.setItem('admin_token', json.token);
         return true;
       }
       return false;
@@ -114,6 +125,7 @@ export function DataProvider({ children }) {
   const logout = () => {
     setIsAuthenticated(false);
     setAuthToken(null);
+    localStorage.removeItem('admin_token');
   };
 
   const resetData = async () => {
