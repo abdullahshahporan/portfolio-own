@@ -29,7 +29,7 @@ function CustomSection({ section, index }) {
 
   return (
     <section
-      id={`custom-${section.id}`}
+      id={`section-${section.id}`}
       ref={ref}
       className={`relative py-20 lg:py-28 overflow-hidden ${hasBg ? 'bg-dark-100/30' : ''}`}
     >

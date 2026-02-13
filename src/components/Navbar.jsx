@@ -1,16 +1,15 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiMenuAlt3, HiX } from 'react-icons/hi';
 import { usePortfolioData } from '../context/DataContext';
 
-const navLinks = [
+const baseNavLinks = [
   { name: 'Home', href: '#home' },
   { name: 'About', href: '#about' },
   { name: 'Skills', href: '#skills' },
   { name: 'Projects', href: '#projects' },
   { name: 'Education', href: '#education' },
-  { name: 'Contact', href: '#contact' },
 ];
 
 export default function Navbar() {
@@ -20,6 +19,17 @@ export default function Navbar() {
   const location = useLocation();
   const { data } = usePortfolioData();
   const isAdmin = location.pathname === '/admin';
+
+  // Build nav links dynamically including enabled custom sections
+  const navLinks = useMemo(() => {
+    const customSectionLinks = (data.customSections || [])
+      .filter(section => section.enabled)
+      .map(section => ({
+        name: section.title,
+        href: `#section-${section.id}`,
+      }));
+    return [...baseNavLinks, ...customSectionLinks, { name: 'Contact', href: '#contact' }];
+  }, [data.customSections]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -44,7 +54,7 @@ export default function Navbar() {
       if (el) observer.observe(el);
     });
     return () => observer.disconnect();
-  }, [isAdmin]);
+  }, [isAdmin, navLinks]);
 
   // Close mobile menu on resize
   useEffect(() => {
