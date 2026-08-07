@@ -32,7 +32,17 @@ export function DataProvider({ children }) {
         const res = await fetch('/api/data');
         const json = await res.json();
         if (json.data) {
-          setData({ ...defaultData, ...json.data });
+          const storedPersonal = json.data.personal || {};
+          const isLegacyAvatar = !storedPersonal.avatar || storedPersonal.avatar.includes('avatars.githubusercontent.com/u/140542566');
+          setData({
+            ...defaultData,
+            ...json.data,
+            personal: {
+              ...defaultData.personal,
+              ...storedPersonal,
+              avatar: isLegacyAvatar ? defaultData.personal.avatar : storedPersonal.avatar,
+            },
+          });
         }
       } catch (err) {
         console.error('Failed to fetch portfolio data:', err);

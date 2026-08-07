@@ -1,121 +1,70 @@
-import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
+import { HiSparkles } from 'react-icons/hi';
 import { usePortfolioData } from '../context/DataContext';
+import { SectionHeading, TiltCard } from './VisualEffects';
 
-const categoryIcons = ['⚡', '🚀', '🛠️', '🔬', '📊', '🎯'];
-const categoryColors = [
-  { border: 'border-primary-500/30', bg: 'bg-primary-500/5', tagBg: 'bg-primary-500/10', tagText: 'text-primary-300', tagBorder: 'border-primary-500/20', hover: 'hover:border-primary-500/50 hover:bg-primary-500/10', glow: 'group-hover:shadow-primary-500/10' },
-  { border: 'border-[#E9C46A]/30', bg: 'bg-[#E9C46A]/5', tagBg: 'bg-[#E9C46A]/10', tagText: 'text-[#E9C46A]', tagBorder: 'border-[#E9C46A]/20', hover: 'hover:border-[#E9C46A]/50 hover:bg-[#E9C46A]/10', glow: 'group-hover:shadow-[#E9C46A]/10' },
-  { border: 'border-[#E76F51]/30', bg: 'bg-[#E76F51]/5', tagBg: 'bg-[#E76F51]/10', tagText: 'text-[#E76F51]', tagBorder: 'border-[#E76F51]/20', hover: 'hover:border-[#E76F51]/50 hover:bg-[#E76F51]/10', glow: 'group-hover:shadow-[#E76F51]/10' },
-  { border: 'border-cyan-500/30', bg: 'bg-cyan-500/5', tagBg: 'bg-cyan-500/10', tagText: 'text-cyan-300', tagBorder: 'border-cyan-500/20', hover: 'hover:border-cyan-500/50 hover:bg-cyan-500/10', glow: 'group-hover:shadow-cyan-500/10' },
-  { border: 'border-violet-500/30', bg: 'bg-violet-500/5', tagBg: 'bg-violet-500/10', tagText: 'text-violet-300', tagBorder: 'border-violet-500/20', hover: 'hover:border-violet-500/50 hover:bg-violet-500/10', glow: 'group-hover:shadow-violet-500/10' },
-  { border: 'border-rose-500/30', bg: 'bg-rose-500/5', tagBg: 'bg-rose-500/10', tagText: 'text-rose-300', tagBorder: 'border-rose-500/20', hover: 'hover:border-rose-500/50 hover:bg-rose-500/10', glow: 'group-hover:shadow-rose-500/10' },
+const accents = [
+  { gradient: 'from-primary-500 to-violet-300', text: 'text-primary-300', glow: 'bg-primary-500/10' },
+  { gradient: 'from-cyan-400 to-blue-500', text: 'text-cyan-300', glow: 'bg-cyan-400/10' },
+  { gradient: 'from-lime-300 to-emerald-500', text: 'text-lime-300', glow: 'bg-lime-300/10' },
 ];
 
 export default function Skills() {
   const { data } = usePortfolioData();
-  const { skills } = data;
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-100px' });
-
-  // Dynamic grid: 1 col for 1, 2 for 2, 3 for 3+
-  const gridCols = skills.length === 1 ? 'lg:grid-cols-1 max-w-xl mx-auto' : skills.length === 2 ? 'lg:grid-cols-2 max-w-4xl mx-auto' : 'lg:grid-cols-3';
+  const visible = useInView(ref, { once: true, margin: '-90px' });
+  const skillNames = data.skills.flatMap((group) => group.items.map((item) => item.name));
 
   return (
-    <section id="skills" className="relative py-24 lg:py-32 overflow-hidden" ref={ref}>
-      <div className="absolute inset-0 bg-dark-100/30" />
-      
-      {/* Background decorations */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : {}}
-        transition={{ duration: 1.2 }}
-        className="absolute top-1/4 -left-20 w-60 h-60 bg-primary-500/5 rounded-full blur-[80px]"
-      />
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : {}}
-        transition={{ duration: 1.2, delay: 0.2 }}
-        className="absolute bottom-1/4 -right-20 w-60 h-60 bg-accent-coral/5 rounded-full blur-[80px]"
-      />
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center mb-16"
-        >
-          <motion.span 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={isInView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="inline-block text-primary-400 font-mono text-sm font-medium tracking-wider uppercase"
-          >
-            My Skills
-          </motion.span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold mt-3 mb-4">
-            Tech{' '}
-            <span className="bg-gradient-to-r from-primary-400 to-accent-gold bg-clip-text text-transparent">Stack</span>
-          </h2>
-          <motion.div
-            initial={{ scaleX: 0 }}
-            animate={isInView ? { scaleX: 1 } : {}}
-            transition={{ duration: 0.7, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="w-20 h-1 bg-gradient-to-r from-primary-500 to-accent-gold mx-auto rounded-full origin-center"
-          />
+    <section id="skills" ref={ref} className="section-shell soft-divider overflow-hidden">
+      <div className="section-container">
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={visible ? { opacity: 1, y: 0 } : {}} transition={{ duration: .7 }}>
+          <SectionHeading eyebrow="Expertise / 02" title="Tools are temporary." accent="Thinking scales." description="A modern toolkit backed by strong fundamentals, product judgment, and the ability to learn fast." />
         </motion.div>
 
-        {/* Skills Categories */}
-        <div className={`grid ${gridCols} gap-8`}>
-          {skills.map((category, catIndex) => {
-            const colors = categoryColors[catIndex % categoryColors.length];
+        <div className="grid gap-5 lg:grid-cols-3">
+          {data.skills.map((category, categoryIndex) => {
+            const accent = accents[categoryIndex % accents.length];
             return (
-              <motion.div
-                key={catIndex}
-                initial={{ opacity: 0, y: 50 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: catIndex * 0.15, ease: [0.16, 1, 0.3, 1] }}
-                whileHover={{ y: -8, transition: { duration: 0.3 } }}
-                className={`group p-6 ${colors.bg} border ${colors.border} rounded-2xl transition-all duration-500 hover:shadow-2xl ${colors.glow}`}
-              >
-                <h3 className="text-lg font-display font-semibold text-white mb-6 flex items-center gap-3">
-                  <motion.span
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={isInView ? { scale: 1, rotate: 0 } : {}}
-                    transition={{ type: 'spring', delay: catIndex * 0.15 + 0.3, stiffness: 200 }}
-                    className="text-xl"
-                  >
-                    {category.icon || categoryIcons[catIndex % categoryIcons.length]}
-                  </motion.span>
-                  {category.category}
-                  <span className="ml-auto text-xs text-gray-600 font-mono">{category.items.length}</span>
-                </h3>
+              <motion.div key={category.category} initial={{ opacity: 0, y: 35 }} animate={visible ? { opacity: 1, y: 0 } : {}} transition={{ duration: .65, delay: categoryIndex * .12 }}>
+                <TiltCard className="glass-panel group h-full min-h-[410px] overflow-hidden rounded-[2rem] p-7 sm:p-8" intensity={6}>
+                  <div className={`absolute -right-16 -top-16 h-44 w-44 rounded-full ${accent.glow} blur-3xl transition-transform duration-700 group-hover:scale-150`} />
+                  <div className="relative flex items-center justify-between" data-depth="2">
+                    <span className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${accent.gradient} text-lg font-black text-zinc-950 shadow-xl`}>
+                      {String(categoryIndex + 1).padStart(2, '0')}
+                    </span>
+                    <HiSparkles className={`text-xl ${accent.text}`} />
+                  </div>
+                  <h3 className="relative mt-12 max-w-[12rem] font-display text-2xl font-semibold leading-tight text-white" data-depth="1">{category.category}</h3>
+                  <p className="relative mt-3 text-sm text-zinc-600">{category.items.length} technologies in active use</p>
 
-                <div className="flex flex-wrap gap-2.5">
-                  {category.items.map((skill, skillIndex) => (
-                    <motion.span
-                      key={skillIndex}
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={isInView ? { opacity: 1, scale: 1 } : {}}
-                      transition={{ 
-                        type: 'spring', 
-                        delay: catIndex * 0.15 + skillIndex * 0.05 + 0.4, 
-                        stiffness: 300, 
-                        damping: 20 
-                      }}
-                      whileHover={{ scale: 1.1, y: -3 }}
-                      whileTap={{ scale: 0.95 }}
-                      className={`px-4 py-2 ${colors.tagBg} ${colors.tagText} border ${colors.tagBorder} ${colors.hover} rounded-xl text-sm font-medium transition-all duration-300 cursor-default backdrop-blur-sm`}
-                    >
-                      {skill.name}
-                    </motion.span>
-                  ))}
-                </div>
+                  <div className="relative mt-8 flex flex-wrap gap-2">
+                    {category.items.map((skill, skillIndex) => (
+                      <motion.span key={skill.name} initial={{ opacity: 0, scale: .85 }} animate={visible ? { opacity: 1, scale: 1 } : {}} transition={{ delay: .3 + categoryIndex * .1 + skillIndex * .035 }}
+                        whileHover={{ y: -3, scale: 1.04 }}
+                        className="rounded-full border border-white/[.07] bg-black/25 px-3.5 py-2 text-xs font-semibold text-zinc-400 transition-colors hover:border-white/20 hover:bg-white/[.07] hover:text-white">
+                        {skill.name}
+                      </motion.span>
+                    ))}
+                  </div>
+
+                  <div className={`absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r ${accent.gradient} opacity-35`} />
+                </TiltCard>
               </motion.div>
             );
           })}
+        </div>
+      </div>
+
+      <div className="mt-20 rotate-[-1.5deg] border-y border-white/[.08] bg-white/[.025] py-5 backdrop-blur-sm">
+        <div className="marquee-track">
+          {[...skillNames, ...skillNames].map((skill, index) => (
+            <div key={`${skill}-${index}`} className="flex items-center">
+              <span className="px-7 font-display text-xl font-semibold text-zinc-500 sm:text-2xl">{skill}</span>
+              <span className="text-primary-400">✦</span>
+            </div>
+          ))}
         </div>
       </div>
     </section>

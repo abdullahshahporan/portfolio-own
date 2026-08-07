@@ -1,169 +1,90 @@
+import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { useRef, useState, useEffect } from 'react';
-import { HiCode, HiAcademicCap, HiLightBulb, HiGlobe } from 'react-icons/hi';
+import { HiArrowNarrowRight, HiCode, HiDeviceMobile, HiLightBulb, HiTemplate } from 'react-icons/hi';
 import { usePortfolioData } from '../context/DataContext';
+import { SectionHeading, TiltCard } from './VisualEffects';
 
-// Animated counter that counts up when in view
-function AnimatedCounter({ value, isInView }) {
-  const [display, setDisplay] = useState('0');
-  useEffect(() => {
-    if (!isInView) return;
-    const numMatch = value.match(/(\d+)/);
-    if (!numMatch) { setDisplay(value); return; }
-    const target = parseInt(numMatch[1]);
-    const prefix = value.slice(0, numMatch.index);
-    const suffix = value.slice(numMatch.index + numMatch[0].length);
-    let frame = 0;
-    const totalFrames = 50;
-    const timer = setInterval(() => {
-      frame++;
-      const progress = frame / totalFrames;
-      const eased = 1 - Math.pow(1 - progress, 4);
-      setDisplay(`${prefix}${Math.round(target * eased)}${suffix}`);
-      if (frame >= totalFrames) clearInterval(timer);
-    }, 25);
-    return () => clearInterval(timer);
-  }, [isInView, value]);
-  return display;
-}
-
-const container = { hidden: {}, visible: { transition: { staggerChildren: 0.1, delayChildren: 0.2 } } };
-const item = { hidden: { opacity: 0, y: 25 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } } };
+const serviceIcons = { web: HiTemplate, mobile: HiDeviceMobile, backend: HiCode, design: HiLightBulb };
 
 export default function About() {
   const { data } = usePortfolioData();
   const { about, personal, services } = data;
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-100px' });
-
-  const iconMap = {
-    web: <HiGlobe className="w-6 h-6" />,
-    mobile: <HiCode className="w-6 h-6" />,
-    backend: <HiLightBulb className="w-6 h-6" />,
-    design: <HiAcademicCap className="w-6 h-6" />,
-  };
+  const visible = useInView(ref, { once: true, margin: '-90px' });
 
   return (
-    <section id="about" className="relative py-24 lg:py-32 overflow-hidden" ref={ref}>
-      {/* Background decoration */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : {}}
-        transition={{ duration: 1 }}
-        className="absolute top-20 -right-40 w-80 h-80 bg-primary-500/5 rounded-full blur-[100px]"
-      />
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : {}}
-        transition={{ duration: 1, delay: 0.3 }}
-        className="absolute bottom-20 -left-40 w-80 h-80 bg-accent-gold/5 rounded-full blur-[100px]"
-      />
-      
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center mb-16"
-        >
-          <motion.span 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={isInView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="inline-block text-primary-400 font-mono text-sm font-medium tracking-wider uppercase"
-          >
-            About Me
-          </motion.span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold mt-3 mb-4">
-            Know Who{' '}
-            <span className="bg-gradient-to-r from-primary-400 to-accent-gold bg-clip-text text-transparent">I Am</span>
-          </h2>
-          <motion.div
-            initial={{ scaleX: 0 }}
-            animate={isInView ? { scaleX: 1 } : {}}
-            transition={{ duration: 0.7, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="w-20 h-1 bg-gradient-to-r from-primary-500 to-accent-gold mx-auto rounded-full origin-center"
-          />
+    <section id="about" ref={ref} className="section-shell">
+      <div className="section-container">
+        <motion.div initial={{ opacity: 0, y: 35 }} animate={visible ? { opacity: 1, y: 0 } : {}} transition={{ duration: .75 }}>
+          <SectionHeading eyebrow="About / 01" title="Engineering with" accent="intent." description="I care about the entire product experience—from the first idea and interface detail to the architecture that keeps it reliable." align="left" />
         </motion.div>
 
-        {/* About Content */}
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 mb-20">
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <p className="text-gray-300 text-lg leading-relaxed mb-6">
-              {about.description}
-            </p>
-            <motion.ul variants={container} initial="hidden" animate={isInView ? 'visible' : 'hidden'} className="space-y-3">
-              {about.highlights.map((text, i) => (
-                <motion.li key={i} variants={item} className="flex items-start gap-3 text-gray-400">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary-500 mt-2.5 flex-shrink-0" />
-                  <span>{text}</span>
-                </motion.li>
-              ))}
-            </motion.ul>
+        <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr]">
+          <motion.div initial={{ opacity: 0, x: -30 }} animate={visible ? { opacity: 1, x: 0 } : {}} transition={{ duration: .75, delay: .15 }}
+            className="glass-panel edge-glow relative overflow-hidden rounded-[2rem] p-7 sm:p-10 lg:p-12">
+            <div className="absolute -right-24 -top-24 h-64 w-64 rounded-full bg-primary-500/10 blur-3xl" />
+            <div className="relative max-w-2xl">
+              <span className="mb-8 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 font-mono text-[10px] uppercase tracking-[.18em] text-zinc-400">The person behind the code</span>
+              <p className="font-display text-2xl font-medium leading-[1.45] tracking-[-.025em] text-zinc-100 sm:text-3xl">
+                {about.description}
+              </p>
+              <div className="mt-10 grid gap-3 sm:grid-cols-2">
+                {about.highlights.map((highlight, index) => (
+                  <motion.div key={highlight} initial={{ opacity: 0, y: 16 }} animate={visible ? { opacity: 1, y: 0 } : {}} transition={{ delay: .3 + index * .08 }}
+                    className="flex gap-3 rounded-2xl border border-white/[.06] bg-black/20 p-4 text-sm leading-6 text-zinc-400">
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-gradient-to-r from-primary-400 to-cyan-300 shadow-[0_0_12px_rgba(103,232,249,.65)]" />
+                    {highlight}
+                  </motion.div>
+                ))}
+              </div>
+            </div>
           </motion.div>
 
-          {/* Stats Grid with Animated Counters */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="grid grid-cols-2 gap-4"
-          >
-            {about.stats.map((stat, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={isInView ? { opacity: 1, scale: 1 } : {}}
-                transition={{ duration: 0.4, delay: 0.4 + i * 0.1 }}
-                whileHover={{ y: -4, borderColor: 'rgba(42,157,143,0.4)' }}
-                className="p-6 bg-dark-100/50 border border-white/5 rounded-2xl transition-all duration-300 group cursor-default"
-              >
-                <div className="text-3xl sm:text-4xl font-display font-bold bg-gradient-to-r from-primary-400 to-accent-gold bg-clip-text text-transparent mb-2">
-                  <AnimatedCounter value={stat.value} isInView={isInView} />
-                </div>
-                <div className="text-sm text-gray-500 font-medium">{stat.label}</div>
-              </motion.div>
-            ))}
+          <motion.div initial={{ opacity: 0, x: 30 }} animate={visible ? { opacity: 1, x: 0 } : {}} transition={{ duration: .75, delay: .22 }} className="grid gap-6">
+            <TiltCard className="glass-panel-strong overflow-hidden rounded-[2rem] p-7 sm:p-8" intensity={7}>
+              <div className="flex items-center justify-between" data-depth="1">
+                <span className="text-xs font-bold uppercase tracking-[.18em] text-zinc-500">My approach</span>
+                <span className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-primary-300">✦</span>
+              </div>
+              <p className="mt-12 font-display text-3xl font-semibold leading-tight tracking-[-.04em] text-white" data-depth="2">
+                Useful first.<br />Beautiful always.<br /><span className="text-zinc-600">Built to last.</span>
+              </p>
+              <div className="mt-10 h-px bg-gradient-to-r from-primary-400/50 via-cyan-300/20 to-transparent" />
+              <p className="mt-5 text-sm leading-7 text-zinc-500">Every interface should earn attention through clarity, craft, and a little bit of delight.</p>
+            </TiltCard>
+
+            <div className="glass-panel rounded-[2rem] p-7 sm:p-8">
+              <p className="text-xs font-bold uppercase tracking-[.18em] text-zinc-500">Currently studying</p>
+              <p className="mt-3 font-display text-xl font-semibold text-white">{personal.department}</p>
+              <p className="mt-2 text-sm leading-6 text-zinc-500">{personal.university}</p>
+            </div>
           </motion.div>
         </div>
 
-        {/* Services */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
-          <h3 className="text-2xl font-display font-bold text-center mb-10">
-            What I <span className="text-accent-gold">Do</span>
-          </h3>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {services.map((service, i) => (
-              <motion.div
-                key={service.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.4, delay: 0.5 + i * 0.1 }}
-                whileHover={{ y: -6, scale: 1.02 }}
-                className="group p-6 bg-dark-100/30 border border-white/5 rounded-2xl hover:border-primary-500/30 hover:bg-dark-100/60 transition-all duration-300"
-              >
-                <motion.div
-                  whileHover={{ rotate: [0, -10, 10, 0] }}
-                  transition={{ duration: 0.4 }}
-                  className="w-12 h-12 flex items-center justify-center rounded-xl bg-primary-500/10 text-primary-400 mb-4 group-hover:bg-primary-500/20 transition-all duration-300"
-                >
-                  {iconMap[service.icon] || <HiCode className="w-6 h-6" />}
-                </motion.div>
-                <h4 className="text-lg font-semibold text-white mb-2">{service.title}</h4>
-                <p className="text-sm text-gray-400 leading-relaxed">{service.description}</p>
-              </motion.div>
-            ))}
+        <div className="mt-20 flex items-end justify-between gap-6">
+          <div>
+            <p className="font-mono text-xs font-bold uppercase tracking-[.18em] text-primary-300">Capabilities</p>
+            <h3 className="mt-3 font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">What I bring to the table</h3>
           </div>
-        </motion.div>
+          <span className="hidden text-xs uppercase tracking-[.18em] text-zinc-600 sm:block">End-to-end product thinking</span>
+        </div>
+
+        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {services.map((service, index) => {
+            const Icon = serviceIcons[service.icon] || HiCode;
+            return (
+              <motion.div key={service.id} initial={{ opacity: 0, y: 28 }} animate={visible ? { opacity: 1, y: 0 } : {}} transition={{ delay: .3 + index * .1 }}>
+                <TiltCard className="glass-panel group h-full rounded-3xl p-6 transition-colors hover:border-white/20" intensity={6}>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[.06] text-xl text-primary-300 transition-all group-hover:bg-primary-500 group-hover:text-white" data-depth="2"><Icon /></div>
+                  <p className="mt-8 font-mono text-[10px] font-bold tracking-[.18em] text-zinc-600">0{index + 1}</p>
+                  <h4 className="mt-2 font-display text-xl font-semibold text-white" data-depth="1">{service.title}</h4>
+                  <p className="mt-3 text-sm leading-6 text-zinc-500">{service.description}</p>
+                  <HiArrowNarrowRight className="mt-7 text-xl text-zinc-600 transition-all group-hover:translate-x-2 group-hover:text-cyan-300" />
+                </TiltCard>
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

@@ -4,7 +4,7 @@ const defaultData = {
     title: "Full-Stack Developer",
     subtitle: "Computer Science & Engineering Student | Tech Enthusiast",
     bio: "I'm a passionate Computer Science & Engineering student at Khulna University of Engineering & Technology (KUET), dedicated to exploring the vast landscape of technology. My interests span across software development, machine learning, and artificial intelligence, with a constant drive to learn and build innovative solutions.",
-    avatar: "https://avatars.githubusercontent.com/u/140542566?v=4",
+    avatar: "/profile.jpg",
     resume: "#",
     location: "Khulna, Bangladesh",
     university: "Khulna University of Engineering & Technology (KUET)",

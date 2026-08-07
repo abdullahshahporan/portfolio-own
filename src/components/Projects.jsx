@@ -1,184 +1,113 @@
-import { useState, useRef } from 'react';
-import { motion, useInView, AnimatePresence } from 'framer-motion';
-import { FaGithub, FaExternalLinkAlt } from 'react-icons/fa';
+import { useRef, useState } from 'react';
+import { AnimatePresence, motion, useInView } from 'framer-motion';
+import { FaExternalLinkAlt, FaGithub } from 'react-icons/fa';
+import { HiArrowNarrowRight } from 'react-icons/hi';
 import { usePortfolioData } from '../context/DataContext';
+import { SectionHeading, TiltCard } from './VisualEffects';
+
+const palettes = [
+  { glow: 'from-violet-600/55 via-indigo-500/20 to-cyan-400/30', chip: 'bg-violet-400', ink: 'text-violet-200' },
+  { glow: 'from-cyan-500/45 via-blue-600/20 to-emerald-400/30', chip: 'bg-cyan-300', ink: 'text-cyan-200' },
+  { glow: 'from-lime-400/35 via-emerald-500/15 to-cyan-500/25', chip: 'bg-lime-300', ink: 'text-lime-200' },
+  { glow: 'from-rose-500/40 via-fuchsia-600/20 to-violet-500/25', chip: 'bg-rose-300', ink: 'text-rose-200' },
+];
+
+function ProjectVisual({ project, index }) {
+  const palette = palettes[index % palettes.length];
+
+  if (project.image) {
+    return <img src={project.image} alt="" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />;
+  }
+
+  return (
+    <div className={`relative h-full w-full overflow-hidden bg-gradient-to-br ${palette.glow}`}>
+      <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.12)_1px,transparent_1px)] [background-size:38px_38px]" />
+      <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
+      <motion.div className="absolute inset-x-[12%] bottom-[-8%] top-[18%] origin-bottom rounded-t-2xl border border-white/15 bg-[#0d0d13]/85 p-2 shadow-2xl shadow-black/60 backdrop-blur-xl"
+        whileHover={{ rotateX: -4, rotateY: 3, y: -8 }} style={{ transformPerspective: 900 }}>
+        <div className="flex h-7 items-center gap-1.5 border-b border-white/[.07] px-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-rose-400/70" /><span className="h-1.5 w-1.5 rounded-full bg-amber-300/70" /><span className="h-1.5 w-1.5 rounded-full bg-emerald-400/70" />
+          <span className="ml-auto h-1.5 w-20 rounded-full bg-white/[.08]" />
+        </div>
+        <div className="grid h-[calc(100%_-_1.75rem)] grid-cols-[.36fr_.64fr] gap-2 p-3">
+          <div className="rounded-lg border border-white/[.06] bg-white/[.035] p-2">
+            <div className={`h-6 w-6 rounded-md ${palette.chip} opacity-80`} />
+            <div className="mt-5 h-1.5 w-full rounded bg-white/10" /><div className="mt-2 h-1.5 w-3/4 rounded bg-white/[.06]" /><div className="mt-2 h-1.5 w-4/5 rounded bg-white/[.06]" />
+          </div>
+          <div className="grid grid-rows-[.65fr_.35fr] gap-2">
+            <div className="rounded-lg border border-white/[.06] bg-white/[.04] p-3">
+              <div className={`h-full rounded-md bg-gradient-to-br ${palette.glow}`} />
+            </div>
+            <div className="grid grid-cols-2 gap-2"><div className="rounded-lg bg-white/[.05]"/><div className="rounded-lg bg-white/[.05]"/></div>
+          </div>
+        </div>
+      </motion.div>
+      <span className={`absolute left-5 top-5 font-mono text-[10px] font-bold tracking-[.16em] ${palette.ink}`}>CASE STUDY · {String(index + 1).padStart(2, '0')}</span>
+    </div>
+  );
+}
 
 export default function Projects() {
   const { data } = usePortfolioData();
-  const { projects } = data;
   const [filter, setFilter] = useState('all');
-  const [showAll, setShowAll] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-100px' });
-
-  const allTags = [...new Set(projects.flatMap((p) => p.tags))];
-  const displayTags = ['all', ...allTags.slice(0, 7)];
-
-  const filtered = filter === 'all'
-    ? projects
-    : projects.filter((p) => p.tags.some((t) => t.toLowerCase() === filter.toLowerCase()));
-
-  const displayed = showAll ? filtered : filtered.slice(0, 6);
-
-  const tagColors = [
-    'bg-primary-500/15 text-primary-300 border-primary-500/20',
-    'bg-[#E9C46A]/15 text-[#E9C46A] border-[#E9C46A]/20',
-    'bg-emerald-500/15 text-emerald-300 border-emerald-500/20',
-    'bg-[#F4A261]/15 text-[#F4A261] border-[#F4A261]/20',
-    'bg-[#E76F51]/15 text-[#E76F51] border-[#E76F51]/20',
-    'bg-cyan-500/15 text-cyan-300 border-cyan-500/20',
-  ];
+  const visible = useInView(ref, { once: true, margin: '-80px' });
+  const tags = ['all', ...new Set(data.projects.flatMap((project) => project.tags))].slice(0, 7);
+  const filtered = filter === 'all' ? data.projects : data.projects.filter((project) => project.tags.includes(filter));
+  const projects = expanded ? filtered : filtered.slice(0, 6);
 
   return (
-    <section id="projects" className="relative py-24 lg:py-32" ref={ref}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
-        >
-          <span className="text-primary-400 font-mono text-sm font-medium tracking-wider uppercase">Portfolio</span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold mt-3 mb-4">
-            Featured{' '}
-            <span className="bg-gradient-to-r from-primary-400 to-accent-gold bg-clip-text text-transparent">Projects</span>
-          </h2>
-          <div className="w-20 h-1 bg-gradient-to-r from-primary-500 to-accent-gold mx-auto rounded-full" />
-        </motion.div>
+    <section id="projects" ref={ref} className="section-shell soft-divider">
+      <div className="section-container">
+        <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={visible ? { opacity: 1, y: 0 } : {}} transition={{ duration: .7 }}>
+            <SectionHeading eyebrow="Selected work / 03" title="Built for the" accent="real world." description="A selection of systems, products, and experiments shaped by real problems—not placeholder briefs." align="left" />
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={visible ? { opacity: 1, y: 0 } : {}} transition={{ delay: .2 }} className="mb-12 flex max-w-xl flex-wrap gap-2 lg:justify-end">
+            {tags.map((tag) => (
+              <button key={tag} onClick={() => { setFilter(tag); setExpanded(false); }}
+                className={`rounded-full border px-4 py-2 text-xs font-bold transition-all ${filter === tag ? 'border-white bg-white text-zinc-950' : 'border-white/[.08] bg-white/[.03] text-zinc-500 hover:border-white/20 hover:text-white'}`}>
+                {tag === 'all' ? 'All work' : tag}
+              </button>
+            ))}
+          </motion.div>
+        </div>
 
-        {/* Filter Tabs */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex flex-wrap justify-center gap-2 mb-12"
-        >
-          {displayTags.map((tag) => (
-            <motion.button
-              key={tag}
-              onClick={() => { setFilter(tag); setShowAll(false); }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`px-4 py-2 text-sm font-medium rounded-xl border transition-all duration-300 ${
-                filter === tag
-                  ? 'bg-primary-600 border-primary-500 text-white shadow-lg shadow-primary-500/20'
-                  : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:border-white/20'
-              }`}
-            >
-              {tag === 'all' ? 'All Projects' : tag}
-            </motion.button>
-          ))}
-        </motion.div>
-
-        {/* Projects Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid gap-5 md:grid-cols-2">
           <AnimatePresence mode="popLayout">
-            {displayed.map((project, i) => (
-              <motion.div
-                key={project.id}
-                layout
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.4, delay: i * 0.06 }}
-                whileHover={{ y: -8 }}
-                className="group relative bg-dark-100/50 border border-white/5 rounded-2xl overflow-hidden hover:border-primary-500/30 transition-all duration-500 hover:shadow-xl hover:shadow-primary-500/5"
-              >
-                {/* Project Image / Gradient */}
-                <div className="h-48 relative overflow-hidden">
-                  {project.image ? (
-                    <img src={project.image} alt={project.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                  ) : (
-                    <div className={`w-full h-full bg-gradient-to-br ${
-                      ['from-[#264653]/30 to-[#2A9D8F]/30', 'from-[#2A9D8F]/30 to-[#E9C46A]/30', 'from-[#E9C46A]/30 to-[#F4A261]/30', 'from-[#F4A261]/30 to-[#E76F51]/30'][i % 4]
-                    } flex items-center justify-center`}>
-                      <span className="text-5xl opacity-30 group-hover:scale-110 transition-transform duration-500">
-                        {['💻', '📱', '🌐', '⚙️', '🔬', '🎯'][i % 6]}
-                      </span>
-                    </div>
-                  )}
-                  {/* Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-dark-100 via-dark-100/50 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
-
-                  {/* Featured badge */}
-                  {project.featured && (
-                    <div className="absolute top-3 right-3 px-3 py-1 bg-primary-500/90 text-xs font-semibold rounded-lg text-white shadow-lg">
-                      Featured
-                    </div>
-                  )}
-                </div>
-
-                {/* Content */}
-                <div className="p-6">
-                  <h3 className="text-lg font-display font-semibold text-white mb-2 group-hover:text-primary-300 transition-colors">
-                    {project.title}
-                  </h3>
-                  <p className="text-sm text-gray-400 leading-relaxed mb-4 line-clamp-3">
-                    {project.description}
-                  </p>
-
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-2 mb-5">
-                    {project.tags.slice(0, 4).map((tag, tagIndex) => (
-                      <span
-                        key={tagIndex}
-                        className={`px-2.5 py-1 text-xs font-medium rounded-lg border ${tagColors[tagIndex % tagColors.length]}`}
-                      >
-                        {tag}
-                      </span>
-                    ))}
+            {projects.map((project, index) => (
+              <motion.article key={project.id} layout initial={{ opacity: 0, y: 28, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: .96 }} transition={{ duration: .55, delay: index * .055 }}
+                className={index === 0 || index === 3 ? 'md:col-span-2' : ''}>
+                <TiltCard className={`glass-panel group overflow-hidden rounded-[2rem] ${index === 0 || index === 3 ? 'lg:grid lg:grid-cols-[1.1fr_.9fr]' : ''}`} intensity={4}>
+                  <div className={`relative overflow-hidden ${index === 0 || index === 3 ? 'min-h-[310px] lg:min-h-[430px]' : 'h-[290px]'}`}>
+                    <ProjectVisual project={project} index={index} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                    {project.featured && <span className="absolute right-4 top-4 rounded-full border border-white/15 bg-black/35 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[.16em] text-white backdrop-blur-lg">Featured</span>}
                   </div>
 
-                  {/* Links */}
-                  <div className="flex items-center gap-3">
-                    {project.github && (
-                      <motion.a
-                        href={project.github}
-                        target="_blank"
-                        rel="noreferrer"
-                        whileHover={{ scale: 1.05, y: -2 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="flex items-center gap-2 px-4 py-2 text-sm bg-white/5 border border-white/10 rounded-lg text-gray-300 hover:text-white hover:border-white/20 hover:bg-white/10 transition-all duration-300"
-                      >
-                        <FaGithub size={14} /> Code
-                      </motion.a>
-                    )}
-                    {project.live && (
-                      <motion.a
-                        href={project.live}
-                        target="_blank"
-                        rel="noreferrer"
-                        whileHover={{ scale: 1.05, y: -2 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="flex items-center gap-2 px-4 py-2 text-sm bg-primary-600/20 border border-primary-500/30 rounded-lg text-primary-300 hover:bg-primary-600/30 hover:text-white transition-all duration-300"
-                      >
-                        <FaExternalLinkAlt size={12} /> Live
-                      </motion.a>
-                    )}
+                  <div className={`flex flex-col p-6 sm:p-8 ${index === 0 || index === 3 ? 'justify-center lg:p-10' : ''}`} data-depth="1">
+                    <div className="flex flex-wrap gap-2">
+                      {project.tags.slice(0, 4).map((tag) => <span key={tag} className="font-mono text-[9px] font-bold uppercase tracking-[.15em] text-zinc-500">{tag}</span>)}
+                    </div>
+                    <h3 className={`mt-5 font-display font-semibold leading-tight tracking-[-.035em] text-white ${index === 0 || index === 3 ? 'text-3xl sm:text-4xl' : 'text-2xl'}`}>{project.title}</h3>
+                    <p className="mt-4 text-sm leading-7 text-zinc-500">{project.description}</p>
+                    <div className="mt-7 flex flex-wrap items-center gap-3">
+                      {project.github && <a href={project.github} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[.04] px-4 py-2 text-xs font-bold text-zinc-300 transition-colors hover:bg-white hover:text-zinc-950"><FaGithub /> Source</a>}
+                      {project.live && <a href={project.live} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full bg-primary-500/15 px-4 py-2 text-xs font-bold text-primary-200 transition-colors hover:bg-primary-500 hover:text-white"><FaExternalLinkAlt className="text-[10px]" /> Live product</a>}
+                      <HiArrowNarrowRight className="ml-auto hidden text-xl text-zinc-700 transition-all group-hover:translate-x-2 group-hover:text-cyan-300 sm:block" />
+                    </div>
                   </div>
-                </div>
-              </motion.div>
+                </TiltCard>
+              </motion.article>
             ))}
           </AnimatePresence>
         </div>
 
-        {/* Show More/Less */}
         {filtered.length > 6 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={isInView ? { opacity: 1 } : {}}
-            className="text-center mt-10"
-          >
-            <motion.button
-              onClick={() => setShowAll(!showAll)}
-              whileHover={{ scale: 1.03, y: -2 }}
-              whileTap={{ scale: 0.97 }}
-              className="px-8 py-3 bg-white/5 border border-white/10 hover:border-primary-500/30 hover:bg-white/10 text-gray-300 hover:text-white font-medium rounded-xl transition-all duration-300"
-            >
-              {showAll ? 'Show Less' : `Show All (${filtered.length})`}
-            </motion.button>
-          </motion.div>
+          <div className="mt-10 text-center">
+            <button onClick={() => setExpanded((value) => !value)} className="secondary-button">{expanded ? 'Show selected projects' : `Explore all ${filtered.length} projects`}</button>
+          </div>
         )}
       </div>
     </section>

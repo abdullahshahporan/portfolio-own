@@ -14,6 +14,7 @@ import Contact from './components/Contact';
 import Footer from './components/Footer';
 import CustomSections from './components/CustomSections';
 import Admin from './pages/Admin';
+import { AmbientBackground } from './components/VisualEffects';
 
 // Scroll Progress Bar Component
 function ScrollProgress() {
@@ -88,45 +89,6 @@ function CursorFollower() {
   );
 }
 
-// Floating Particles Background Effect
-function FloatingParticles() {
-  const particles = Array.from({ length: 15 }, (_, i) => ({
-    id: i,
-    size: Math.random() * 4 + 2,
-    delay: Math.random() * 5,
-    duration: Math.random() * 10 + 15,
-    left: Math.random() * 100
-  }));
-
-  return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-      {particles.map(particle => (
-        <motion.div
-          key={particle.id}
-          className="absolute rounded-full bg-primary-500/20"
-          style={{
-            width: particle.size,
-            height: particle.size,
-            left: `${particle.left}%`,
-            bottom: '-20px'
-          }}
-          animate={{
-            y: [0, -window.innerHeight - 100],
-            x: [0, Math.sin(particle.id) * 50],
-            opacity: [0, 0.6, 0.6, 0]
-          }}
-          transition={{
-            duration: particle.duration,
-            delay: particle.delay,
-            repeat: Infinity,
-            ease: 'linear'
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
 // Scroll to top on route change
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -197,15 +159,15 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-dark-950 noise-bg">
+    <div className="min-h-screen bg-dark-950 noise-bg isolate">
       {/* Scroll Progress Indicator */}
       {!isAdmin && <ScrollProgress />}
       
       {/* Custom Cursor (desktop only) */}
       {!isAdmin && <CursorFollower />}
       
-      {/* Floating Particles Background */}
-      {!isAdmin && <FloatingParticles />}
+      {/* Persistent cinematic backdrop */}
+      {!isAdmin && <AmbientBackground />}
       
       <Navbar />
       <ScrollToTop />
