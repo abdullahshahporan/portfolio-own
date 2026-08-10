@@ -14,6 +14,8 @@ export default function Contact() {
   const [state, setState] = useState('idle');
   const [isOpen, setIsOpen] = useState(false);
   const nameInputRef = useRef(null);
+  const modalRef = useRef(null);
+  const triggerRef = useRef(null);
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -21,13 +23,29 @@ export default function Contact() {
     document.body.style.overflow = 'hidden';
     const focusTimer = window.setTimeout(() => nameInputRef.current?.focus(), 350);
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape') setIsOpen(false);
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+        return;
+      }
+      if (event.key !== 'Tab' || !modalRef.current) return;
+      const focusable = [...modalRef.current.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])')];
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       window.clearTimeout(focusTimer);
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = previousOverflow;
+      triggerRef.current?.focus();
     };
   }, [isOpen]);
 
@@ -73,12 +91,12 @@ export default function Contact() {
       <section id="contact" ref={ref} className="section-shell soft-divider overflow-hidden">
         <div className="section-container">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={visible ? { opacity: 1, y: 0 } : {}} transition={{ duration: .75 }}
-          className="relative mb-8 overflow-hidden rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-primary-600/25 via-white/[.04] to-cyan-400/10 px-6 py-14 text-center shadow-2xl shadow-primary-950/30 sm:px-10 sm:py-20">
+          className="relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-gradient-to-br from-primary-600/25 via-white/[.04] to-cyan-400/10 px-5 py-12 text-center shadow-2xl shadow-primary-950/30 sm:rounded-[2.5rem] sm:px-10 sm:py-20">
           <div className="absolute left-1/2 top-0 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary-400/25 blur-[90px]" />
           <p className="relative font-mono text-xs font-bold uppercase tracking-[.2em] text-primary-200">Have an idea in mind?</p>
-          <h2 className="relative mx-auto mt-5 max-w-4xl font-display text-[clamp(2.8rem,7vw,6.4rem)] font-semibold leading-[.94] tracking-[-.065em] text-white">Let’s make something <span className="font-light italic text-zinc-400">remarkable.</span></h2>
+          <h2 className="relative mx-auto mt-5 max-w-4xl text-balance font-display text-[clamp(2.3rem,11vw,6.4rem)] font-semibold leading-[.98] tracking-[-.05em] text-white sm:leading-[.94] sm:tracking-[-.065em]">Let’s make something <span className="font-light italic text-zinc-400">remarkable.</span></h2>
           <p className="relative mx-auto mt-6 max-w-xl text-sm leading-7 text-zinc-400 sm:text-base">I’m open to thoughtful collaborations, internships, freelance work, and conversations about technology that can move people forward.</p>
-          <button type="button" onClick={() => setIsOpen(true)} className="primary-button relative mt-8">Start with an email <HiArrowNarrowRight className="text-lg" /></button>
+          <button ref={triggerRef} type="button" onClick={() => setIsOpen(true)} className="primary-button relative mt-8 w-full sm:w-auto">Start with an email <HiArrowNarrowRight className="text-lg" /></button>
         </motion.div>
         </div>
       </section>
@@ -86,33 +104,34 @@ export default function Contact() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="fixed inset-0 z-[100] flex items-start overflow-y-auto bg-black/75 p-3 backdrop-blur-xl sm:p-6"
+            className="fixed inset-0 z-[100] flex items-start overflow-y-auto bg-black/85 p-0 backdrop-blur-xl sm:p-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: .25 }}
-            onMouseDown={(event) => { if (event.target === event.currentTarget) setIsOpen(false); }}
+            onPointerDown={(event) => { if (event.target === event.currentTarget) setIsOpen(false); }}
           >
             <motion.div
               role="dialog"
+              ref={modalRef}
               aria-modal="true"
               aria-labelledby="contact-dialog-title"
               initial={{ opacity: 0, y: 35, scale: .97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 24, scale: .98 }}
               transition={{ duration: .38, ease: [0.16, 1, 0.3, 1] }}
-              className="glass-panel-strong relative mx-auto my-auto max-w-6xl overflow-hidden rounded-[2rem] border-white/10 p-3 shadow-[0_30px_120px_rgba(0,0,0,.7)] sm:rounded-[2.5rem] sm:p-5"
+              className="glass-panel-strong relative mx-auto my-auto min-h-[100dvh] w-full max-w-6xl overflow-hidden rounded-none border-white/10 p-2 shadow-[0_30px_120px_rgba(0,0,0,.7)] sm:min-h-0 sm:rounded-[2.5rem] sm:p-5"
             >
               <div className="pointer-events-none absolute -left-24 -top-24 h-80 w-80 rounded-full bg-primary-500/15 blur-[100px]" />
               <div className="pointer-events-none absolute -bottom-32 right-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-[100px]" />
               <button type="button" onClick={() => setIsOpen(false)} aria-label="Close contact form"
-                className="absolute right-5 top-5 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/35 text-zinc-400 backdrop-blur-xl transition-all hover:rotate-90 hover:border-white/25 hover:text-white sm:right-7 sm:top-7">
+                className="absolute right-4 top-4 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/45 text-zinc-400 backdrop-blur-xl transition-all hover:rotate-90 hover:border-white/25 hover:text-white sm:right-7 sm:top-7">
                 <HiX size={20} />
               </button>
 
-              <div className="relative grid gap-4 pt-14 lg:grid-cols-[.78fr_1.22fr] lg:pt-0">
+              <div className="relative grid gap-3 pt-16 sm:gap-4 lg:grid-cols-[.78fr_1.22fr] lg:pt-0">
                 <div className="grid gap-4">
-                  <TiltCard className="rounded-[1.75rem] border border-white/[.07] bg-black/20 p-6 sm:p-8" intensity={4}>
+                  <TiltCard className="rounded-[1.35rem] border border-white/[.07] bg-black/20 p-5 sm:rounded-[1.75rem] sm:p-8" intensity={4}>
                     <p className="font-mono text-[10px] font-bold uppercase tracking-[.18em] text-zinc-600">Direct line</p>
                     <div className="mt-7 grid gap-5">
                       {contacts.map(({ icon: Icon, ...item }) => (
@@ -123,7 +142,7 @@ export default function Contact() {
                       ))}
                     </div>
                   </TiltCard>
-                  <div className="relative min-h-[210px] overflow-hidden rounded-[1.75rem] border border-white/[.09] bg-black/25 p-7 shadow-[inset_0_1px_0_rgba(255,255,255,.05)] sm:min-h-[235px] sm:p-9">
+                  <div className="relative min-h-[200px] overflow-hidden rounded-[1.35rem] border border-white/[.09] bg-black/25 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,.05)] sm:min-h-[235px] sm:rounded-[1.75rem] sm:p-9">
                     <motion.div aria-hidden="true" className="absolute -left-16 -top-20 h-56 w-56 rounded-full bg-primary-500/20 blur-[70px]"
                       animate={{ opacity: [.45, .85, .45], scale: [1, 1.12, 1] }} transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }} />
                     <motion.div aria-hidden="true" className="absolute -bottom-24 right-0 h-52 w-52 rounded-full bg-cyan-400/15 blur-[70px]"
@@ -148,7 +167,7 @@ export default function Contact() {
                   </div>
                 </div>
 
-                <form onSubmit={submit} className="rounded-[1.75rem] border border-white/[.07] bg-black/20 p-6 sm:p-9">
+                <form onSubmit={submit} className="rounded-[1.35rem] border border-white/[.07] bg-black/20 p-5 sm:rounded-[1.75rem] sm:p-9">
                   <div className="mb-8 flex items-start justify-between gap-14">
                     <div><p id="contact-dialog-title" className="font-display text-2xl font-semibold text-white">Tell me about your project</p><p className="mt-2 text-sm text-zinc-500">I usually reply within 24–48 hours.</p></div>
                     <span className="mt-1 hidden h-3 w-3 shrink-0 rounded-full bg-lime-300 shadow-[0_0_18px_rgba(190,242,100,.65)] sm:block" />

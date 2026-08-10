@@ -23,12 +23,13 @@ export default function Skills() {
           <SectionHeading eyebrow="Expertise / 02" title="Tools are temporary." accent="Thinking scales." description="A modern toolkit backed by strong fundamentals, product judgment, and the ability to learn fast." />
         </motion.div>
 
-        <div className="grid gap-5 lg:grid-cols-3">
+        <p className="mb-3 text-right font-mono text-[9px] font-bold uppercase tracking-[.16em] text-zinc-600 md:hidden">Swipe to explore →</p>
+        <div className="mobile-scroll flex gap-4 overflow-x-auto pb-3 md:grid md:grid-cols-2 md:overflow-visible md:pb-0 lg:grid-cols-3">
           {data.skills.map((category, categoryIndex) => {
             const accent = accents[categoryIndex % accents.length];
             return (
-              <motion.div key={category.category} initial={{ opacity: 0, y: 35 }} animate={visible ? { opacity: 1, y: 0 } : {}} transition={{ duration: .65, delay: categoryIndex * .12 }}>
-                <TiltCard className="glass-panel group h-full min-h-[410px] overflow-hidden rounded-[2rem] p-7 sm:p-8" intensity={6}>
+              <motion.div key={category.category} initial={{ opacity: 0, y: 35 }} animate={visible ? { opacity: 1, y: 0 } : {}} transition={{ duration: .65, delay: categoryIndex * .12 }} className="mobile-snap min-w-[86%] md:min-w-0">
+                <TiltCard className="glass-panel group h-full min-h-[360px] overflow-hidden rounded-[1.5rem] p-5 sm:min-h-[390px] sm:rounded-[2rem] sm:p-8 lg:min-h-[410px]" intensity={6}>
                   <div className={`absolute -right-16 -top-16 h-44 w-44 rounded-full ${accent.glow} blur-3xl transition-transform duration-700 group-hover:scale-150`} />
                   <div className="relative flex items-center justify-between" data-depth="2">
                     <span className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${accent.gradient} text-lg font-black text-zinc-950 shadow-xl`}>
@@ -36,7 +37,7 @@ export default function Skills() {
                     </span>
                     <HiSparkles className={`text-xl ${accent.text}`} />
                   </div>
-                  <h3 className="relative mt-12 max-w-[12rem] font-display text-2xl font-semibold leading-tight text-white" data-depth="1">{category.category}</h3>
+                  <h3 className="relative mt-9 max-w-[12rem] font-display text-[1.35rem] font-semibold leading-tight text-white sm:mt-12 sm:text-2xl" data-depth="1">{category.category}</h3>
                   <p className="relative mt-3 text-sm text-zinc-600">{category.items.length} technologies in active use</p>
 
                   <div className="relative mt-8 flex flex-wrap gap-2">
@@ -57,7 +58,7 @@ export default function Skills() {
         </div>
       </div>
 
-      <div className="mt-20 rotate-[-1.5deg] border-y border-white/[.08] bg-white/[.025] py-5 backdrop-blur-sm">
+      <div className="mt-20 hidden rotate-[-1.5deg] border-y border-white/[.08] bg-white/[.025] py-5 backdrop-blur-sm sm:block">
         <div className="marquee-track">
           {[...skillNames, ...skillNames].map((skill, index) => (
             <div key={`${skill}-${index}`} className="flex items-center">

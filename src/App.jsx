@@ -1,7 +1,7 @@
-import { Routes, Route, useLocation } from 'react-router-dom';
-import { AnimatePresence, motion, useScroll, useSpring } from 'framer-motion';
+import { Navigate, Routes, Route, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion, useMotionValue, useReducedMotion, useScroll, useSpring } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { usePortfolioData } from './context/DataContext';
 
 import Navbar from './components/Navbar';
@@ -35,56 +35,49 @@ function ScrollProgress() {
 
 // Custom Cursor Follower for desktop
 function CursorFollower() {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const reduceMotion = useReducedMotion();
+  const rawX = useMotionValue(-100);
+  const rawY = useMotionValue(-100);
+  const x = useSpring(rawX, { stiffness: 650, damping: 42, mass: 0.18 });
+  const y = useSpring(rawY, { stiffness: 650, damping: 42, mass: 0.18 });
 
   useEffect(() => {
-    // Only show on desktop devices
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    if (isTouchDevice) return;
+    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (!finePointer || reduceMotion) return undefined;
 
     const handleMouseMove = (e) => {
-      setPosition({ x: e.clientX - 10, y: e.clientY - 10 });
-      if (!isVisible) setIsVisible(true);
+      rawX.set(e.clientX - 9);
+      rawY.set(e.clientY - 9);
+      setIsVisible(true);
     };
-
     const handleMouseEnter = () => setIsVisible(true);
     const handleMouseLeave = () => setIsVisible(false);
-
-    // Handle hovering over interactive elements
-    const handleHoverStart = () => setIsHovering(true);
-    const handleHoverEnd = () => setIsHovering(false);
+    const handlePointerOver = (event) => setIsHovering(Boolean(event.target.closest('a, button, input, textarea, select, [role="button"]')));
+    const handlePointerOut = (event) => setIsHovering(Boolean(event.relatedTarget?.closest?.('a, button, input, textarea, select, [role="button"]')));
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseenter', handleMouseEnter);
     document.addEventListener('mouseleave', handleMouseLeave);
-
-    // Add hover listeners to all interactive elements
-    const interactiveElements = document.querySelectorAll('a, button, input, textarea, [role="button"]');
-    interactiveElements.forEach(el => {
-      el.addEventListener('mouseenter', handleHoverStart);
-      el.addEventListener('mouseleave', handleHoverEnd);
-    });
+    document.addEventListener('pointerover', handlePointerOver);
+    document.addEventListener('pointerout', handlePointerOut);
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseenter', handleMouseEnter);
       document.removeEventListener('mouseleave', handleMouseLeave);
-      interactiveElements.forEach(el => {
-        el.removeEventListener('mouseenter', handleHoverStart);
-        el.removeEventListener('mouseleave', handleHoverEnd);
-      });
+      document.removeEventListener('pointerover', handlePointerOver);
+      document.removeEventListener('pointerout', handlePointerOut);
     };
-  }, [isVisible]);
+  }, [rawX, rawY, reduceMotion]);
 
   if (!isVisible) return null;
 
   return (
     <motion.div
       className={`cursor-follower ${isHovering ? 'hovering' : ''}`}
-      animate={{ x: position.x, y: position.y }}
-      transition={{ type: 'spring', stiffness: 500, damping: 28, mass: 0.5 }}
+      style={{ x, y }}
     />
   );
 }
@@ -93,7 +86,7 @@ function CursorFollower() {
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    window.scrollTo({ top: 0, behavior: 'auto' });
   }, [pathname]);
   return null;
 }
@@ -101,7 +94,8 @@ function ScrollToTop() {
 // Portfolio page composed of all sections
 function Portfolio() {
   return (
-    <motion.div
+    <motion.main
+      id="main-content"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -115,14 +109,14 @@ function Portfolio() {
       <CustomSections />
       <Contact />
       <Footer />
-    </motion.div>
+    </motion.main>
   );
 }
 
 function App() {
   const location = useLocation();
   const { loading } = usePortfolioData();
-  const isAdmin = location.pathname === '/admin';
+  const isAdmin = location.pathname.startsWith('/admin');
 
   if (loading) {
     return (
@@ -160,6 +154,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-dark-950 noise-bg isolate">
+      {!isAdmin && <a href="#main-content" className="skip-link">Skip to main content</a>}
       {/* Scroll Progress Indicator */}
       {!isAdmin && <ScrollProgress />}
       
@@ -177,23 +172,24 @@ function App() {
         toastOptions={{
           duration: 3000,
           style: {
-            background: '#1e293b',
-            color: '#e2e8f0',
-            border: '1px solid rgba(255,255,255,0.06)',
-            borderRadius: '12px',
+            background: 'rgba(23,23,31,.94)',
+            color: '#f4f4f5',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '16px',
             padding: '12px 16px',
             fontSize: '14px',
+            backdropFilter: 'blur(20px)',
           },
           success: {
             iconTheme: {
-              primary: '#2A9D8F',
-              secondary: '#e2e8f0',
+              primary: '#BEF264',
+              secondary: '#17171f',
             },
           },
           error: {
             iconTheme: {
-              primary: '#E76F51',
-              secondary: '#e2e8f0',
+              primary: '#FB7185',
+              secondary: '#17171f',
             },
           },
         }}
@@ -203,6 +199,7 @@ function App() {
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<Portfolio />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AnimatePresence>
     </div>

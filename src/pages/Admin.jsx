@@ -512,6 +512,7 @@ function ProjectsTab({ data, updateAndSave }) {
       title: '',
       description: '',
       image: '',
+      video: '',
       tags: [],
       github: '',
       live: '',
@@ -550,6 +551,7 @@ function ProjectsTab({ data, updateAndSave }) {
           <div className="grid sm:grid-cols-2 gap-4">
             <InputField label="Title" value={project.title} onChange={e => updateProject(i, 'title', e.target.value)} />
             <InputField label="Image URL" value={project.image} onChange={e => updateProject(i, 'image', e.target.value)} placeholder="https://..." />
+            <InputField label="Preview Video URL" value={project.video || ''} onChange={e => updateProject(i, 'video', e.target.value)} placeholder="https://.../demo.mp4 (optional)" />
             <InputField label="GitHub URL" value={project.github} onChange={e => updateProject(i, 'github', e.target.value)} />
             <InputField label="Live Demo URL" value={project.live} onChange={e => updateProject(i, 'live', e.target.value)} />
             <div className="sm:col-span-2">

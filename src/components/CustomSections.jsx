@@ -19,7 +19,7 @@ function CustomSection({ section, index }) {
           <div className={`grid gap-5 ${section.layout === 'list' ? 'mx-auto max-w-4xl' : section.items.length > 2 ? 'md:grid-cols-2 lg:grid-cols-3' : 'md:grid-cols-2'}`}>
             {section.items.map((item, itemIndex) => (
               <motion.div key={item.id || itemIndex} initial={{ opacity: 0, y: 25 }} animate={visible ? { opacity: 1, y: 0 } : {}} transition={{ delay: .15 + itemIndex * .09 }}>
-                <TiltCard className="glass-panel group h-full rounded-[2rem] p-7" intensity={5}>
+                <TiltCard className="glass-panel group h-full rounded-[1.5rem] p-5 sm:rounded-[2rem] sm:p-7" intensity={5}>
                   <div className="flex items-start justify-between" data-depth="2">
                     <span className="text-3xl">{item.icon || '✦'}</span>
                     <span className="font-mono text-[10px] text-zinc-600">{String(itemIndex + 1).padStart(2, '0')}</span>

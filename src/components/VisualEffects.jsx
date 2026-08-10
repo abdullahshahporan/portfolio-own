@@ -17,7 +17,8 @@ export function TiltCard({ children, className = '', intensity = 10, ...props })
   const glareY = useTransform(y, [-0.5, 0.5], ['15%', '85%']);
 
   const handleMove = (event) => {
-    if (!ref.current || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const canTilt = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (!ref.current || !canTilt || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const rect = ref.current.getBoundingClientRect();
     x.set((event.clientX - rect.left) / rect.width - 0.5);
     y.set((event.clientY - rect.top) / rect.height - 0.5);
@@ -33,6 +34,7 @@ export function TiltCard({ children, className = '', intensity = 10, ...props })
       ref={ref}
       onPointerMove={handleMove}
       onPointerLeave={reset}
+      onPointerCancel={reset}
       style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
       className={`tilt-card ${className}`}
       {...props}
